@@ -559,13 +559,13 @@ const getLCQuestion = async () => {
       'Authorization': 'Bearer ' + process.env.SUPABASE_ANON_KEY,
     },
     data: {
-      query: dailyLCQuery,
+      // query: dailyLCQuery,
     },
   });
 
   //save to cache for 24 hours
   console.log(response.data);
-  const data = response.data.data.activeDailyCodingChallengeQuestion;
+  const data = response.data.dailyChallenge;
   const date = data.date;
   const question = data.question;
   const title = question.title;
