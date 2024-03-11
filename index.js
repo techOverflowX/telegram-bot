@@ -555,6 +555,7 @@ const getLCQuestion = async () => {
     method: 'post',
     headers: {
       'content-type': 'application/json',
+      'Authorization': 'Bearer ' + process.env.SUPABASE_ANON_KEY,
     },
     data: {
       query: dailyLCQuery,
