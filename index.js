@@ -33,7 +33,8 @@ const termsUrl = 'https://paradite.github.io/16x-bot/terms.json';
 
 let trollQuotes = [];
 const trollConfuciusQuoteUrl =
-  'https://raw.githubusercontent.com/techbump/telegram-bot/main/docs/troll_confucius.json';
+
+  'https://raw.githubusercontent.com/techOverflowX/telegram-bot/be46e746899dcd85792494d5df238c49680f812f/docs/troll_confucius.json';
 
 const RECURSIVE_MARKER = 'Auto-translation';
 const IGNORE_WORDS = ['haha', 'ha ha', 'lmao', '@'];
