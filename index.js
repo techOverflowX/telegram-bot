@@ -1,14 +1,14 @@
-const axios = require('axios');
-const { Pool } = require('pg'); // Changed from Client to Pool
-const dotenv = require('dotenv');
+const axios = require("axios");
+const { Pool } = require("pg"); // Changed from Client to Pool
+const dotenv = require("dotenv");
 dotenv.config();
-const TelegramBot = require('node-telegram-bot-api');
-const dayjs = require('dayjs');
-let isBetween = require('dayjs/plugin/isBetween');
+const TelegramBot = require("node-telegram-bot-api");
+const dayjs = require("dayjs");
+let isBetween = require("dayjs/plugin/isBetween");
 dayjs.extend(isBetween);
 const Redis = require("ioredis");
 const redis = new Redis(process.env.REDIS_URL);
-const cron = require('node-cron');
+const cron = require("node-cron");
 console.log(process.env);
 const pool = new Pool({
   user: process.env.PGUSER,
@@ -23,45 +23,44 @@ const pool = new Pool({
 
 pool
   .connect()
-  .then(() => console.log('connected'))
-  .catch((err) => console.error('connection error', err.stack));
+  .then(() => console.log("connected"))
+  .catch((err) => console.error("connection error", err.stack));
 
 // Initialize dictionary from remote json
 
 let definitionMap = {};
-const termsUrl = 'https://paradite.github.io/16x-bot/terms.json';
+const termsUrl = "https://paradite.github.io/16x-bot/terms.json";
 
 let trollQuotes = [];
 const trollConfuciusQuoteUrl =
+  "https://raw.githubusercontent.com/techOverflowX/telegram-bot/be46e746899dcd85792494d5df238c49680f812f/docs/troll_confucius.json";
 
-  'https://raw.githubusercontent.com/techOverflowX/telegram-bot/be46e746899dcd85792494d5df238c49680f812f/docs/troll_confucius.json';
-
-const RECURSIVE_MARKER = 'Auto-translation';
-const IGNORE_WORDS = ['haha', 'ha ha', 'lmao', '@'];
+const RECURSIVE_MARKER = "Auto-translation";
+const IGNORE_WORDS = ["haha", "ha ha", "lmao", "@"];
 const LANGUAGE_CONFIDENCE_THRESHOLD = 0.85;
 
 axios
   .get(termsUrl)
   .then((response) => {
     console.log(
-      'got remote dictionary of size',
+      "got remote dictionary of size",
       Object.keys(response.data).length
     );
     definitionMap = response.data;
   })
   .catch((error) => {
-    console.error('init dictionary fail');
+    console.error("init dictionary fail");
     console.error(error);
   });
 
 axios
   .get(trollConfuciusQuoteUrl)
   .then((response) => {
-    console.log('got remote array of size', response.data.length);
+    console.log("got remote array of size", response.data.length);
     trollQuotes = response.data;
   })
   .catch((error) => {
-    console.error('init troll fail');
+    console.error("init troll fail");
     console.error(error);
   });
 
@@ -77,7 +76,7 @@ const bot = new TelegramBot(token, { polling: true });
  * @param {msTelegramBot.Messageg} msg
  */
 function getNameForReply(msg) {
-  let namePart = 'Anonymous user';
+  let namePart = "Anonymous user";
   if (msg.from.username) {
     namePart = `@${msg.from.username}`;
   } else if (msg.from.first_name) {
@@ -90,17 +89,17 @@ function getNameForReply(msg) {
 function checkAdmin(msg) {
   // Usernames are case sensitive
   const admins = [
-    'Hahaashton',
-    'Mr_Marcia_Ong',
-    'n1ds4n',
-    'zdeykid',
-    'Ngelean',
+    "Hahaashton",
+    "Mr_Marcia_Ong",
+    "n1ds4n",
+    "zdeykid",
+    "Ngelean",
   ];
   const chatId = msg.chat.id;
   const msgThreadId = msg.message_thread_id;
   const messageId = msg.message_id;
   if (!admins.includes(msg.from.username)) {
-    bot.sendMessage(chatId, 'You are not an admin to execute this command', {
+    bot.sendMessage(chatId, "You are not an admin to execute this command", {
       message_thread_id: msgThreadId,
       reply_to_message_id: messageId,
     });
@@ -140,7 +139,7 @@ async function getDinBotResponse(query, namePart, chatId) {
   console.log(`Sending to Din bot from chatId ${chatId}:`);
   console.log(query);
   const dinBotUrl =
-    'https://asia-southeast1-free-jobs-253208.cloudfunctions.net/din';
+    "https://asia-southeast1-free-jobs-253208.cloudfunctions.net/din";
 
   const dinToken = process.env.DIN_TOKEN;
 
@@ -162,17 +161,17 @@ async function getDinBotResponse(query, namePart, chatId) {
 
     // validate data
     if (!data || data.length > 600) {
-      console.log('Received invalid Din bot response');
+      console.log("Received invalid Din bot response");
       if (data && data.length > 600) {
         console.log(data.slice(600));
       }
       return undefined;
     }
-    console.log('Received Din bot response:');
+    console.log("Received Din bot response:");
     console.log(data);
     if (
-      query.toLowerCase().includes('code') &&
-      query.toLowerCase().includes('in')
+      query.toLowerCase().includes("code") &&
+      query.toLowerCase().includes("in")
     ) {
       // walkaround for code formatting
       return `\`\`\`
@@ -181,7 +180,7 @@ ${data}
     }
     return data;
   } catch (error) {
-    console.log('Din bot error');
+    console.log("Din bot error");
     console.log(error);
     return undefined;
   }
@@ -199,7 +198,7 @@ bot.onText(/(?:!summarize|!summarise)(?: *)(.*)/, async (msg, match) => {
 
   const replyToMessage = msg.reply_to_message;
   if (!replyToMessage) {
-    console.log('Summarize: No replyToMessage');
+    console.log("Summarize: No replyToMessage");
 
     return;
   }
@@ -215,14 +214,14 @@ bot.onText(/(?:!summarize|!summarise)(?: *)(.*)/, async (msg, match) => {
   console.log(`Received Original: ${resp}`);
 
   if (!resp) {
-    console.log('Summarize: No resp');
+    console.log("Summarize: No resp");
     return;
   }
 
   let reply = `Failed to summarize.`;
   // redirect to Din bot
   const dinBotResponseText = await getDinBotResponse(
-    `summarise ${match[1] ? match[1] : 'this'}\r\n${resp}`,
+    `summarise ${match[1] ? match[1] : "this"}\r\n${resp}`,
     namePart,
     chatId
   );
@@ -235,7 +234,7 @@ bot.onText(/(?:!summarize|!summarise)(?: *)(.*)/, async (msg, match) => {
   bot.sendMessage(chatId, reply, {
     reply_to_message_id: replyToMessageId,
     disable_web_page_preview: true,
-    parse_mode: 'Markdown',
+    parse_mode: "Markdown",
   });
 });
 
@@ -273,7 +272,7 @@ bot.onText(/!bot ((?:.|\n|\r)+)/, async (msg, match) => {
   bot.sendMessage(chatId, reply, {
     reply_to_message_id: messageId,
     disable_web_page_preview: true,
-    parse_mode: 'Markdown',
+    parse_mode: "Markdown",
   });
 });
 
@@ -298,7 +297,7 @@ async function handleNonEnglish(namePart, messageContent, messageId, chatId) {
   bot.sendMessage(chatId, reply, {
     reply_to_message_id: messageId,
     disable_web_page_preview: true,
-    parse_mode: 'Markdown',
+    parse_mode: "Markdown",
   });
 }
 
@@ -368,7 +367,7 @@ bot.onText(
 );
 
 // motivational reply to encourage ppl to carry on joining the LC party
-bot.on('message', async (msg) => {
+bot.on("message", async (msg) => {
   // console.log(msg)
   const messageId = msg.message_id;
   if (msg.photo && msg.caption) {
@@ -411,13 +410,13 @@ bot.on('message', async (msg) => {
         .minute(0)
         .second(0)
         .millisecond(0)
-        .add(1, 'day');
+        .add(1, "day");
     }
-    const submissionDate = dayjs(resp, 'YYYYMMDD').hour(8);
+    const submissionDate = dayjs(resp, "YYYYMMDD").hour(8);
 
     if (
       match &&
-      !submissionDate.isBetween(leftBound, rightBound, 'hour', '[]')
+      !submissionDate.isBetween(leftBound, rightBound, "hour", "[]")
     ) {
       bot.sendMessage(chatId, reply, {
         reply_to_message_id: messageId,
@@ -426,25 +425,25 @@ bot.on('message', async (msg) => {
     }
 
     // if matchTT or match within correct time:
-    const dateStr = submissionDate.format('DD/MM/YYYY');
+    const dateStr = submissionDate.format("DD/MM/YYYY");
     const response = await axios.get(`https://api.github.com/zen`);
 
-    let statsStr = '';
+    let statsStr = "";
     try {
       const res = await pool.query(
         `SELECT COUNT(*) FROM ( SELECT DISTINCT a.username FROM lc_records as a WHERE a.qn_date = $1 and a.username != $2 ) as temp `,
         [dateStr, namePart]
       );
       const existingCount = Number(res.rows[0].count);
-      console.log('existingCount', existingCount);
+      console.log("existingCount", existingCount);
       if (existingCount >= 0) {
         statsStr = `\r\nYou are the ${getCountStr(
           existingCount + 1
         )} person to submit for ${dateStr}.`;
       }
 
-      console.log('dateStr', dateStr);
-      console.log('statsStr', statsStr);
+      console.log("dateStr", dateStr);
+      console.log("statsStr", statsStr);
 
       const trollQuoteChoice = Math.floor(Math.random() * trollQuotes.length);
       const quote = useTrollQuote
@@ -456,20 +455,20 @@ bot.on('message', async (msg) => {
         reply_to_message_id: messageId,
       });
     } catch (error) {
-      console.error('pg count query fail');
-      console.error('send fail');
+      console.error("pg count query fail");
+      console.error("send fail");
       console.error(error);
     }
 
     try {
-      console.log('executing query');
+      console.log("executing query");
       await pool.query(
         `INSERT INTO lc_records (username, qn_date, has_image, msg_text, timestamp) VALUES ($1, $2, $3, $4, $5)`,
         [namePart, dateStr, true, msg.caption, new Date()]
       );
-      console.log('insert success');
+      console.log("insert success");
     } catch (error) {
-      console.error('pg write fail');
+      console.error("pg write fail");
       console.error(error);
     }
   }
@@ -477,11 +476,11 @@ bot.on('message', async (msg) => {
 
 function getCountStr(count) {
   if (count === 1) {
-    return 'first';
+    return "first";
   } else if (count === 2) {
-    return 'second';
+    return "second";
   } else if (count === 3) {
-    return 'third';
+    return "third";
   } else {
     return `${count}th`;
   }
@@ -544,19 +543,18 @@ query questionOfToday {
 // `;
 // POST request to get LC daily question
 const getLCQuestion = async () => {
-
   //check if exist in cache first
-  const cachedLCQ = await redis.get('daily-lcq');
+  const cachedLCQ = await redis.get("daily-lcq");
   if (cachedLCQ) {
-    console.log('Using cached LCQ');
+    console.log("Using cached LCQ");
     return cachedLCQ;
   }
   const response = await axios({
-    url: 'https://khbvwaqoymhdhgoiwtlf.supabase.co/functions/v1/lc-query',
-    method: 'post',
+    url: "https://khbvwaqoymhdhgoiwtlf.supabase.co/functions/v1/lc-query",
+    method: "post",
     headers: {
-      'content-type': 'application/json',
-      'Authorization': 'Bearer ' + process.env.SUPABASE_ANON_KEY,
+      "content-type": "application/json",
+      Authorization: "Bearer " + process.env.SUPABASE_ANON_KEY,
     },
     data: {
       // query: dailyLCQuery,
@@ -569,22 +567,20 @@ const getLCQuestion = async () => {
   const date = data.date;
   const question = data.question;
   const title = question.title;
-  const link = 'https://leetcode.com' + data.link;
+  const link = "https://leetcode.com" + data.link;
   const difficulty = question.difficulty;
-  let diffIndicator = '';
-  if (difficulty === 'Easy') {
-    diffIndicator = '🟩';
-  } else if (difficulty === 'Medium') {
-    diffIndicator = '🟨';
-  } else if (difficulty === 'Hard') {
-    diffIndicator = '🟥';
+  let diffIndicator = "";
+  if (difficulty === "Easy") {
+    diffIndicator = "🟩";
+  } else if (difficulty === "Medium") {
+    diffIndicator = "🟨";
+  } else if (difficulty === "Hard") {
+    diffIndicator = "🟥";
   }
   const msg = `*👨‍💻LC Daily Question👩‍💻*\r\n*Date:* ${date}\r\n*Title: *${title}\r\n*Difficulty:* ${difficulty} ${diffIndicator}\r\n${link}`;
-  
-  await redis.set('daily-lcq', msg, 'EX', 86400);
+
+  await redis.set("daily-lcq", msg, "EX", 86400);
   return msg;
-
-
 };
 
 let cronJob;
@@ -609,21 +605,19 @@ bot.onText(/\/startLC/i, async (msg) => {
     message_thread_id: msgThreadId,
   });
   chatIdCronStatusMap[chatId] = true;
-  console.log('Cron job has started');
+  console.log("Cron job has started");
   // Just for testing every 1 minute
   // cronJob = cron.schedule('* * * * *', () => {
   // Posts a daily question at 8:01AM
   cronJob = cron.schedule(
-    '01 8 * * *',
+    "01 8 * * *",
     () => {
-      //drop LCQ cache
-      redis.del('daily-lcq').then().
       getLCQuestion()
         .then((result) => {
           console.log(result);
           bot.sendMessage(chatId, result, {
             message_thread_id: msgThreadId,
-            parse_mode: 'Markdown',
+            parse_mode: "Markdown",
           });
         })
         .catch((error) => {
@@ -632,9 +626,13 @@ bot.onText(/\/startLC/i, async (msg) => {
     },
     {
       scheduled: true,
-      timezone: 'Asia/Singapore',
+      timezone: "Asia/Singapore",
     }
   );
+});
+
+cronJob = cron.schedule("0 8 * * *", async () => {
+  await redis.del("daily-lcq");
 });
 
 // Command to end cron job
@@ -649,7 +647,7 @@ bot.onText(/\/stopLC/i, async (msg) => {
     message_thread_id: msgThreadId,
   });
   chatIdCronStatusMap[chatId] = false;
-  console.log('Cron job has been stopped');
+  console.log("Cron job has been stopped");
   cronJob.stop();
 });
 
@@ -682,19 +680,19 @@ bot.onText(/!lc/i, async (msg) => {
       bot.sendMessage(chatId, reply, {
         message_thread_id: msgThreadId,
         reply_to_message_id: messageId,
-        parse_mode: 'Markdown',
+        parse_mode: "Markdown",
       });
     })
     .catch((error) => {
       console.error(error);
     });
 });
-bot.on('message', (msg) => {
+bot.on("message", (msg) => {
   // Check if the message is a new chat member or left chat member notification
   if (msg.new_chat_members || msg.left_chat_member) {
     bot.deleteMessage(msg.chat.id, msg.message_id).catch((err) => {
-      console.error('Error deleting message:', err);
+      console.error("Error deleting message:", err);
     });
   }
 });
-console.log('Bot started');
+console.log("Bot started");
