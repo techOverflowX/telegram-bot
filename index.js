@@ -631,9 +631,16 @@ bot.onText(/\/startLC/i, async (msg) => {
   );
 });
 
-cronJob = cron.schedule("0 8 * * *", async () => {
-  await redis.del("daily-lcq");
-});
+cronJob = cron.schedule(
+  "0 8 * * *",
+  async () => {
+    await redis.del("daily-lcq");
+  },
+  {
+    scheduled: true,
+    timezone: "Asia/Singapore",
+  }
+);
 
 // Command to end cron job
 bot.onText(/\/stopLC/i, async (msg) => {
