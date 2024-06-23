@@ -362,7 +362,11 @@ bot.onText(
     console.log(`Chinese matched: ${resp}`);
     console.log(`Message content: ${messageContent}`);
 
-    handleNonEnglish(namePart, messageContent, messageId, chatId);
+    if (!translationBlackListThreadIds.has(msg.message_thread_id)) {
+      handleNonEnglish(namePart, messageContent, messageId, chatId);
+    } else {
+      console.log('Translation stopped for this thread');
+    }
   }
 );
 
@@ -702,4 +706,35 @@ bot.on("message", (msg) => {
     });
   }
 });
+
+const translationBlackListThreadIds = new Set();
+//function to stop translation for message_thread_id
+bot.onText(/\/stopTranslation/i, async (msg) => {
+  const chatId = msg.chat.id;
+  const msgThreadId = msg.message_thread_id;
+  const messageId = msg.message_id;
+  const namePart = getNameForReply(msg);
+  translationBlackListThreadIds.add(msgThreadId);
+  const reply = `Translation stopped for this thread.`;
+  bot.sendMessage(chatId, reply, {
+    message_thread_id: msgThreadId,
+    reply_to_message_id: messageId,
+  });
+});
+
+//remove thread from translation blacklist
+bot.onText(/\/startTranslation/i, async (msg) => {
+  const chatId = msg.chat.id;
+  const msgThreadId = msg.message_thread_id;
+  const messageId = msg.message_id;
+  const namePart = getNameForReply(msg);
+  translationBlackListThreadIds.delete(msgThreadId);
+  const reply = `Translation started for this thread.`;
+  bot.sendMessage(chatId, reply, {
+    message_thread_id: msgThreadId,
+    reply_to_message_id: messageId,
+  });
+});
+
+
 console.log("Bot started");
