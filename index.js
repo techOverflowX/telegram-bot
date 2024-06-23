@@ -349,6 +349,34 @@ async function handleNonEnglish(namePart, messageContent, messageId, chatId) {
 //     handleNonEnglish(namePart, messageContent, messageId, chatId);
 //   }
 // });
+const translationBlackListThreadIds = new Set();
+//function to stop translation for message_thread_id
+bot.onText(/\/stopTranslation/i, async (msg) => {
+  const chatId = msg.chat.id;
+  const msgThreadId = msg.message_thread_id;
+  const messageId = msg.message_id;
+  const namePart = getNameForReply(msg);
+  translationBlackListThreadIds.add(msgThreadId);
+  const reply = `Translation stopped for this thread.`;
+  bot.sendMessage(chatId, reply, {
+    message_thread_id: msgThreadId,
+    reply_to_message_id: messageId,
+  });
+});
+
+//remove thread from translation blacklist
+bot.onText(/\/startTranslation/i, async (msg) => {
+  const chatId = msg.chat.id;
+  const msgThreadId = msg.message_thread_id;
+  const messageId = msg.message_id;
+  const namePart = getNameForReply(msg);
+  translationBlackListThreadIds.delete(msgThreadId);
+  const reply = `Translation started for this thread.`;
+  bot.sendMessage(chatId, reply, {
+    message_thread_id: msgThreadId,
+    reply_to_message_id: messageId,
+  });
+});
 
 // Chinese detection and translation
 bot.onText(
@@ -365,7 +393,6 @@ bot.onText(
 
     console.log(`Chinese matched: ${resp}`);
     console.log(`Message content: ${messageContent}`);
-
     if (!translationBlackListThreadIds.has(msg.message_thread_id)) {
       handleNonEnglish(namePart, messageContent, messageId, chatId);
     } else {
@@ -620,7 +647,11 @@ bot.onText(/\/startLC/i, async (msg) => {
   cronJob = cron.schedule(
     "01 8 * * *",
     () => {
-      getLCQuestion()
+      //drop LCQ cache
+      redis
+        .del("daily-lcq")
+        .then()
+        .getLCQuestion()
         .then((result) => {
           console.log(result);
           bot.sendMessage(chatId, result, {
