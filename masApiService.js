@@ -329,6 +329,10 @@ async function getTbillsMessage() {
         console.log("[index.tbills] got next tbills", nextTbills);
         console.log("[index.tbills] got recent tbills", recentTbills);
 
+        if (nextTbills.issueCode == "" || recentTbills == "") {
+            return tBiilsErrorMessage;
+        }
+
         reply = `💰* Daily T-Bills ${formatDate(today)} (${daysOfWeek[today.getDay()]})* 💰
 
 *Next 6-month T-Bills*
