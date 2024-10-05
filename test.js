@@ -7,22 +7,35 @@ const dayjs = require("dayjs");
 let isBetween = require("dayjs/plugin/isBetween");
 dayjs.extend(isBetween);
 const Redis = require("ioredis");
-const redis = new Redis(process.env.REDIS_URL);
+
 const cron = require("node-cron");
 console.log(process.env);
 
 const { getTbillsMessage, tBiilsErrorMessage } = require('./masApiService');
 
-const pool = new Pool({
-  user: process.env.PGUSER,
-  host: process.env.PGHOST,
-  database: process.env.PGDATABASE,
-  password: process.env.PGPASSWORD, // Change to your password
+let redis, pool;
 
-  // You can configure your pool settings here, if needed.
-  // max: 20, // max number of clients in the pool
-  // idleTimeoutMillis: 30000, // how long a client is allowed to remain idle before being closed
-});
+// mock the redis and postgres db in test env
+if (process.env.NODE_ENV === 'test') {
+  redis = require('./mockRedis') // Use mock Redis for testing
+
+  const createMockDb = require('./mockPostgres'); // Import the mock PostgreSQL
+  pool = createMockDb(); // Use mock PostgreSQL for testing
+}
+else {
+  redis = new Redis(process.env.REDIS_URL);
+
+  pool = new Pool({
+    user: process.env.PGUSER,
+    host: process.env.PGHOST,
+    database: process.env.PGDATABASE,
+    password: process.env.PGPASSWORD, // Change to your password
+  
+    // You can configure your pool settings here, if needed.
+    // max: 20, // max number of clients in the pool
+    // idleTimeoutMillis: 30000, // how long a client is allowed to remain idle before being closed
+  });
+}
 
 pool
   .connect()
@@ -593,6 +606,7 @@ const getLCQuestion = async () => {
 
 let cronJob;
 const chatIdCronStatusMap = {};
+const chatIdTBillsCronStatusMap = {};
 
 // Command to start cron job
 // Definitely need to change this to an admin-only command
