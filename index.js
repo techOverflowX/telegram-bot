@@ -11,7 +11,7 @@ const redis = new Redis(process.env.REDIS_URL);
 const cron = require("node-cron");
 console.log(process.env);
 
-const { getTbillsMessage, tBiilsErrorMessage } = require('./masApiService');
+const { getTbillsMessage, tBiilsErrorMessage } = require("./masApiService");
 
 const pool = new Pool({
   user: process.env.PGUSER,
@@ -97,7 +97,7 @@ function checkAdmin(msg) {
     "n1ds4n",
     "zdeykid",
     "Ngelean",
-    "chingchonglingling"
+    "chingchonglingling",
   ];
   const chatId = msg.chat.id;
   const msgThreadId = msg.message_thread_id;
@@ -369,7 +369,7 @@ bot.onText(
     if (!translationBlackListThreadIds.has(msg.message_thread_id)) {
       handleNonEnglish(namePart, messageContent, messageId, chatId);
     } else {
-      console.log('Translation stopped for this thread');
+      console.log("Translation stopped for this thread");
     }
   }
 );
@@ -761,7 +761,7 @@ bot.onText(/\/tbills/i, async (msg) => {
   const messageId = msg.message_id;
   const namePart = getNameForReply(msg);
   translationBlackListThreadIds.delete(msgThreadId);
-  
+
   try {
     const reply = await getTbillsMessage();
     console.log("[index.tbills] got tbills message:", reply);
@@ -779,7 +779,7 @@ bot.onText(/\/tbills/i, async (msg) => {
     });
   }
 });
-
+let chatIdTBillsCronStatusMap = [];
 // Command to start cron job for T-Bills reminder
 bot.onText(/\/startTbills/i, async (msg) => {
   if (!checkAdmin(msg)) {
