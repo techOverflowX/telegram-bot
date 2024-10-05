@@ -10,6 +10,9 @@ const Redis = require("ioredis");
 const redis = new Redis(process.env.REDIS_URL);
 const cron = require("node-cron");
 console.log(process.env);
+
+const { getTbillsMessage, tBiilsErrorMessage } = require('./masApiService');
+
 const pool = new Pool({
   user: process.env.PGUSER,
   host: process.env.PGHOST,
