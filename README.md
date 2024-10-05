@@ -1,8 +1,8 @@
-# 16x Engineer Bot
+# TechOF Bot a forked version of 16x Engineer Bot
 
 A telegram bot designed for tech telegram groups.
 
-Made by [16x.engineer](https://16x.engineer/).
+Co-developed by [16x.engineer](https://16x.engineer/), [Mrmarciaong](https://mrmarciaong.com/) and many others
 
 ## Features
 
@@ -40,11 +40,19 @@ Send a screenshot with caption containing "#LCYYYYMMDD", eg. `#LC20221107`
   <img src="https://github.com/paradite/16x-bot/blob/main/screenshots/din.png?raw=true" alt="Proxy for Din Bot" width="600"/>
 </p>
 
+
+**6. Get TBills feature** (by [tyqiangz](https://github.com/tyqiangz))
+
+- Added `/hello` command so users can test if the bot is healthy
+- Added `/tbills` command to get information about the next 6 months t-bills and most recent 6 months t-bills by pinging MAS API
+- Added `/startTbills`, `/checkTbills`, and `/stopTbills` commands to start, check, and stop daily t-bills scheduling, similar to LC handlers
+  - The same message as `/tbills` will be sent daily at 8am GMT+8
+
 ## Using the bot
 
 **1. Use bot in a group chat**
 
-1. Add [16x Engineer Bot](https://t.me/my_16x_engineer_bot) to your group chat.
+1. Add [TechOF Bot](https://t.me/TechOF_bot) to your group chat.
 2. Add the bot as an administrator (no special permissions needed).
 3. Send a message in the chat, eg. `!bot TC` to verify it is working.
 
