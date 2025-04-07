@@ -735,7 +735,7 @@ bot.onText(/!lc/i, async (msg) => {
 });
 
 // Help command to list available commands
-bot.onText(/^(\/cmd|!cmd)$/i, (msg) => {
+bot.onText(/(\/cmd|!cmd)/i, (msg) => {
   const chatId = msg.chat.id;
   const messageId = msg.message_id;
   const msgThreadId = msg.message_thread_id;
