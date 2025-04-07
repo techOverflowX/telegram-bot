@@ -736,36 +736,33 @@ bot.onText(/!lc/i, async (msg) => {
 
 // Help command to list available commands
 bot.onText(/^[!/](cmd|help)\b/i, (msg) => {
-  // Modified regex pattern
   const chatId = msg.chat.id;
   const messageId = msg.message_id;
   const msgThreadId = msg.message_thread_id;
 
-  console.log("Help command triggered"); // Add logging to debug
+  console.log("Help command triggered");
 
-  const commands = `
-Here are the available commands:
+  const commands = `Here are the available commands:
 
 *General Commands:*
-\`!bot <term>\` - Get definition or explanation for a term.
-\`!summarise\` or \`!summarize\` - Reply to a message to summarize its content.
-\`!lc\` - Get today's LeetCode daily question.
-\`!cmd\` or \`/cmd\` - Show this help message.
+\`!bot <term>\` - Get definition or explanation for a term
+\`!summarise\` or \`!summarize\` - Reply to a message to summarize its content
+\`!lc\` - Get today's LeetCode daily question
+\`!cmd\` or \`/cmd\` - Show this help message
 
 *LeetCode Submission:*
-\`#LCYYYYMMDD\` - Submit your LeetCode solution for the daily question (e.g., #LC20231027). Must be posted with an image.
-\`#LCTTYYYYMMDD\` - Submit a past LeetCode solution using a time travel token (e.g., #LCTT20231026). Must be posted with an image.
-\`#LCYYYYMMDD_trollme\` - Submit your LeetCode solution and get a troll quote (e.g., #LC20231027_trollme).
+\`#LCYYYYMMDD\` - Submit your LeetCode solution for the daily question (e.g., #LC20231027)
+\`#LCTTYYYYMMDD\` - Submit a past LeetCode solution using a time travel token (e.g., #LCTT20231026)
+\`#LCYYYYMMDD_trollme\` - Submit your LeetCode solution and get a troll quote (e.g., #LC20231027_trollme)
 
 *Translation Control:*
-\`/startTranslation\` - Enable automatic translation of non-English messages in this thread.
-\`/stopTranslation\` - Disable automatic translation of non-English messages in this thread.
+\`/startTranslation\` - Enable automatic translation of non-English messages in this thread
+\`/stopTranslation\` - Disable automatic translation of non-English messages in this thread
 
 *Admin Commands (Restricted):*
-\`/startLC\` - Start the daily LeetCode question posting schedule.
-\`/stopLC\` - Stop the daily LeetCode question posting schedule.
-\`/checkLC\` - Check the status of the daily LeetCode posting schedule.
-`;
+\`/startLC\` - Start the daily LeetCode question posting schedule
+\`/stopLC\` - Stop the daily LeetCode question posting schedule
+\`/checkLC\` - Check the status of the daily LeetCode posting schedule`;
 
   bot.sendMessage(chatId, commands, {
     message_thread_id: msgThreadId,
