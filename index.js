@@ -733,7 +733,45 @@ bot.onText(/!lc/i, async (msg) => {
       console.error(error);
     });
 });
-bot.on("message", (msg) => {
+
+// Help command to list available commands
+bot.onText(/^(\/help|!help)$/i, (msg) => {
+  const chatId = msg.chat.id;
+  const messageId = msg.message_id;
+  const msgThreadId = msg.message_thread_id;
+
+  const commands = `
+Here are the available commands:
+
+*General Commands:*
+\`!bot <term>\` - Get definition or explanation for a term.
+\`!summarise\` or \`!summarize\` - Reply to a message to summarize its content.
+\`!lc\` - Get today's LeetCode daily question.
+\`!help\` or \`/help\` - Show this help message.
+
+*LeetCode Submission:*
+\`#LCYYYYMMDD\` - Submit your LeetCode solution for the daily question (e.g., #LC20231027). Must be posted with an image.
+\`#LCTTYYYYMMDD\` - Submit a past LeetCode solution using a time travel token (e.g., #LCTT20231026). Must be posted with an image.
+\`#LCYYYYMMDD_trollme\` - Submit your LeetCode solution and get a troll quote (e.g., #LC20231027_trollme).
+
+*Translation Control:*
+\`/startTranslation\` - Enable automatic translation of non-English messages in this thread.
+\`/stopTranslation\` - Disable automatic translation of non-English messages in this thread.
+
+*Admin Commands (Restricted):*
+\`/startLC\` - Start the daily LeetCode question posting schedule.
+\`/stopLC\` - Stop the daily LeetCode question posting schedule.
+\`/checkLC\` - Check the status of the daily LeetCode posting schedule.
+`;
+
+  bot.sendMessage(chatId, commands, {
+    message_thread_id: msgThreadId,
+    reply_to_message_id: messageId,
+    parse_mode: 'Markdown',
+  });
+});
+
+bot.on('message', (msg) => {
   // Check if the message is a new chat member or left chat member notification
   if (msg.new_chat_members || msg.left_chat_member) {
     bot.deleteMessage(msg.chat.id, msg.message_id).catch((err) => {
