@@ -735,10 +735,13 @@ bot.onText(/!lc/i, async (msg) => {
 });
 
 // Help command to list available commands
-bot.onText(/(\/cmd|!cmd)/i, (msg) => {
+bot.onText(/^[!/](cmd|help)\b/i, (msg) => {
+  // Modified regex pattern
   const chatId = msg.chat.id;
   const messageId = msg.message_id;
   const msgThreadId = msg.message_thread_id;
+
+  console.log("Help command triggered"); // Add logging to debug
 
   const commands = `
 Here are the available commands:
