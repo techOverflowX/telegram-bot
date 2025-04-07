@@ -735,7 +735,7 @@ bot.onText(/!lc/i, async (msg) => {
 });
 
 // Help command to list available commands
-bot.onText(/^(\/help|!help)$/i, (msg) => {
+bot.onText(/^(\/cmd|!cmd)$/i, (msg) => {
   const chatId = msg.chat.id;
   const messageId = msg.message_id;
   const msgThreadId = msg.message_thread_id;
@@ -747,7 +747,7 @@ Here are the available commands:
 \`!bot <term>\` - Get definition or explanation for a term.
 \`!summarise\` or \`!summarize\` - Reply to a message to summarize its content.
 \`!lc\` - Get today's LeetCode daily question.
-\`!help\` or \`/help\` - Show this help message.
+\`!cmd\` or \`/cmd\` - Show this help message.
 
 *LeetCode Submission:*
 \`#LCYYYYMMDD\` - Submit your LeetCode solution for the daily question (e.g., #LC20231027). Must be posted with an image.
