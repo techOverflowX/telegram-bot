@@ -767,11 +767,11 @@ Here are the available commands:
   bot.sendMessage(chatId, commands, {
     message_thread_id: msgThreadId,
     reply_to_message_id: messageId,
-    parse_mode: 'Markdown',
+    parse_mode: "Markdown",
   });
 });
 
-bot.on('message', (msg) => {
+bot.on("message", (msg) => {
   // Check if the message is a new chat member or left chat member notification
   if (msg.new_chat_members || msg.left_chat_member) {
     bot.deleteMessage(msg.chat.id, msg.message_id).catch((err) => {
@@ -780,7 +780,6 @@ bot.on('message', (msg) => {
   }
 });
 
-const translationBlackListThreadIds = new Set();
 //function to stop translation for message_thread_id
 bot.onText(/\/stopTranslation/i, async (msg) => {
   const chatId = msg.chat.id;
