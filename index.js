@@ -618,68 +618,89 @@ const getLCQuestion = async () => {
   return msg;
 };
 
-let cronJob;
-const chatIdCronStatusMap = {};
+// Store thread IDs for each chat
+const chatThreadMap = {};
+let chatIdCronStatusMap = {};
+let lcQuestionCronJob;
+let cacheClearCronJob;
 
 // Command to start cron job
-// Definitely need to change this to an admin-only command
 bot.onText(/\/startLC/i, async (msg) => {
   if (!checkAdmin(msg)) {
     return;
   }
   const chatId = msg.chat.id;
   const msgThreadId = msg.message_thread_id;
+
+  // Store the thread ID for this chat
+  chatThreadMap[chatId] = msgThreadId;
+
   if (chatIdCronStatusMap[chatId]) {
     bot.sendMessage(chatId, `Daily LC schedule already started.`, {
       message_thread_id: msgThreadId,
     });
     return;
   }
+
+  chatIdCronStatusMap[chatId] = true;
   const reply = `Starting daily LC schedule.`;
   bot.sendMessage(chatId, reply, {
     message_thread_id: msgThreadId,
   });
-  chatIdCronStatusMap[chatId] = true;
-  console.log("Cron job has started");
-  // Just for testing every 1 minute
-  // cronJob = cron.schedule('* * * * *', () => {
-  // Posts a daily question at 8:01AM
-  cronJob = cron.schedule(
-    "01 8 * * *",
-    () => {
-      //drop LCQ cache
-      redis
-        .del("daily-lcq")
-        .then()
-        .getLCQuestion()
-        .then((result) => {
-          console.log(result);
-          bot.sendMessage(chatId, result, {
-            message_thread_id: msgThreadId,
-            parse_mode: "Markdown",
-          });
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+
+  console.log(`LC schedule activated for chatId: ${chatId}`);
+
+  // Start the cron job if it's not already running
+  if (!lcQuestionCronJob) {
+    lcQuestionCronJob = cron.schedule(
+      "01 8 * * *",
+      async () => {
+        try {
+          await redis.del("daily-lcq");
+          const lcQuestion = await getLCQuestion();
+          console.log("Fetched LC question, sending to active chats");
+
+          // Send to all chats with active status
+          for (const [chatId, isActive] of Object.entries(
+            chatIdCronStatusMap
+          )) {
+            if (isActive) {
+              const threadId = chatThreadMap[chatId];
+              console.log(
+                `Sending LC question to chatId: ${chatId}, threadId: ${threadId}`
+              );
+              bot.sendMessage(chatId, lcQuestion, {
+                message_thread_id: threadId,
+                parse_mode: "Markdown",
+              });
+            }
+          }
+        } catch (error) {
+          console.error("Error in LC question cron job:", error);
+        }
+      },
+      {
+        scheduled: true,
+        timezone: "Asia/Singapore",
+      }
+    );
+    console.log("LC question cron job started");
+  }
+});
+
+// Initialize the cache clear cron job separately
+if (!cacheClearCronJob) {
+  cacheClearCronJob = cron.schedule(
+    "0 8 * * *",
+    async () => {
+      await redis.del("daily-lcq");
     },
     {
       scheduled: true,
       timezone: "Asia/Singapore",
     }
   );
-});
-
-cronJob = cron.schedule(
-  "0 8 * * *",
-  async () => {
-    await redis.del("daily-lcq");
-  },
-  {
-    scheduled: true,
-    timezone: "Asia/Singapore",
-  }
-);
+}
 
 // Command to end cron job
 bot.onText(/\/stopLC/i, async (msg) => {
@@ -688,13 +709,24 @@ bot.onText(/\/stopLC/i, async (msg) => {
   }
   const chatId = msg.chat.id;
   const msgThreadId = msg.message_thread_id;
-  const reply = `Stopping daily LC schedule.`;
+
+  chatIdCronStatusMap[chatId] = false;
+  const reply = `Stopping daily LC schedule for this chat.`;
   bot.sendMessage(chatId, reply, {
     message_thread_id: msgThreadId,
   });
-  chatIdCronStatusMap[chatId] = false;
-  console.log("Cron job has been stopped");
-  cronJob.stop();
+
+  console.log(`Deactivated LC schedule for chatId: ${chatId}`);
+
+  // Check if any chats are still active
+  const anyActive = Object.values(chatIdCronStatusMap).some((status) => status);
+
+  // If none are active, stop the job entirely
+  if (!anyActive && lcQuestionCronJob) {
+    lcQuestionCronJob.stop();
+    lcQuestionCronJob = null;
+    console.log("All chats inactive - stopped LC question cron job");
+  }
 });
 
 // Check cron job schedule
