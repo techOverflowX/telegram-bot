@@ -21,12 +21,27 @@ async function isElectionRelated(message) {
           content: message,
         },
       ],
-      temperature: 0, // Lower temperature for more consistent responses
+      temperature: 0.1, // Lower temperature for more consistent responses
     });
 
-    const response = completion.choices[0].message.content
-      ?.trim()
-      .toUpperCase();
+    // Add proper null checks to prevent "Cannot read properties of undefined" error
+    if (
+      !completion ||
+      !completion.choices ||
+      !Array.isArray(completion.choices) ||
+      completion.choices.length === 0 ||
+      !completion.choices[0] ||
+      !completion.choices[0].message ||
+      !completion.choices[0].message.content
+    ) {
+      console.log(
+        "Unexpected API response format:",
+        JSON.stringify(completion)
+      );
+      return false; // Default to allowing the message if response format is unexpected
+    }
+
+    const response = completion.choices[0].message.content.trim().toUpperCase();
     return response === "YES";
   } catch (error) {
     console.error("Error checking if message is election related:", error);
