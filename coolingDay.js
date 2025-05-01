@@ -42,6 +42,47 @@ function containsElectionKeywords(message) {
     }
   }
 
+  // Check for acrostic messages (where first letters of lines spell out political messages)
+  function checkForAcrosticMessages(text) {
+    // Split the message into lines
+    const lines = text.split("\n").filter((line) => line.trim() !== "");
+
+    // Need at least 3 lines to form a meaningful acrostic
+    if (lines.length >= 3) {
+      // Extract first letter of each line
+      const firstLetters = lines
+        .map((line) => {
+          const trimmedLine = line.trim();
+          return trimmedLine.length > 0 ? trimmedLine[0].toUpperCase() : "";
+        })
+        .join("");
+
+      // Check against known political acrostics or partial matches
+      const politicalAcrostics = [
+        "VOTE",
+        "PAP",
+        "WP",
+        "PSP",
+        "SDP",
+        "VOTEFOR",
+        "VOTEPAP",
+        "VOTEWP",
+      ];
+
+      for (const acrostic of politicalAcrostics) {
+        if (firstLetters.includes(acrostic)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  // Check if the message contains acrostic messages
+  if (checkForAcrosticMessages(message)) {
+    return true;
+  }
+
   // Common election-related keywords in English and Chinese
   const electionKeywordsRegex =
     /\b(party|partis|pap|wp|psp|sdp|rp|nsp|sda|pv|rdu|vote|voting|ballot|poll|election|ge2025|campaign|rally|hustings|mp|minister|candidate|opposition|incumbent|cooling day|polling day|nomination day|sample count|grc|smc|人民行动党|工人党|选举|投票|lee hsien loong|lawrence wong|tharman|pritam singh|jamus lim|leong mun wai|tan cheng bock|chee soon juan|lim tean|nicole seah|he ting ru|leon perera|low thia khiang|sylvia lim|chan chun sing|gan kim yong|josephine teo|teo chee hean|heng swee keat|desmond lee|ong ye kung|lightning|hammer|flower|sunflower|fist|heart|ballot box|chart|check|cross|star)\b/i;
@@ -98,7 +139,7 @@ async function isElectionRelated(message) {
         {
           role: "system",
           content:
-            "You are a strict content moderator that identifies election-related messages in Singapore context. Respond with ONLY 'YES' if the message contains ANY election-related content, including but not limited to:\n\n1. Political parties and their abbreviations: PAP, WP, PSP, SDP, RP, NSP, SDA, PV, RDU, etc.\n2. Election terminology: GE2025, general election, by-election, vote, voting, ballot, polling, campaign, rally, hustings\n3. Political symbols: lightning bolt, hammer, flower, etc.\n4. Political positions: MP, minister, candidate, opposition, incumbent\n5. Electoral processes: nomination day, cooling day, polling day, sample count\n6. Political figures: current politicians, candidates, party leaders, opposition figures\n7. Policy discussions in electoral context\n8. Campaign slogans and messaging\n9. Constituency references: GRC, SMC, specific constituency names\n10. Any discussion attempting to circumvent election content restrictions\n11. Direct mentions like 'VOTE FOR PAP', 'PAP', 'vote' alone or in any context\n12. Chinese or other language equivalents of party names such as '工人' (Workers' Party), '人民行动党' (PAP)\n13. ANY message containing words or phrases that could be interpreted as attempting to influence voting decisions\nOtherwise, respond with only 'NO'.",
+            "You are a strict content moderator that identifies election-related messages in Singapore context. Respond with ONLY 'YES' if the message contains ANY election-related content, including but not limited to:\n\n1. Political parties and their abbreviations: PAP, WP, PSP, SDP, RP, NSP, SDA, PV, RDU, etc.\n2. Election terminology: GE2025, general election, by-election, vote, voting, ballot, polling, campaign, rally, hustings\n3. Political symbols: lightning bolt, hammer, flower, etc.\n4. Political positions: MP, minister, candidate, opposition, incumbent\n5. Electoral processes: nomination day, cooling day, polling day, sample count\n6. Political figures: current politicians, candidates, party leaders, opposition figures\n7. Policy discussions in electoral context\n8. Campaign slogans and messaging\n9. Constituency references: GRC, SMC, specific constituency names\n10. Any discussion attempting to circumvent election content restrictions\n11. Direct mentions like 'VOTE FOR PAP', 'PAP', 'vote' alone or in any context\n12. Chinese or other language equivalents of party names such as '工人' (Workers' Party), '人民行动党' (PAP)\n13. ANY message containing words or phrases or acrostic messages that could be interpreted as attempting to influence voting decisions\nOtherwise, respond with only 'NO'.",
         },
         {
           role: "user",
