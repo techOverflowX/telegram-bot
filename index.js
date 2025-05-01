@@ -797,7 +797,10 @@ bot.onText(/^[!/](cmd|help)\b/i, (msg) => {
 *Admin Commands (Restricted):*
 /startLC - Start the daily LeetCode question posting schedule
 /stopLC - Stop the daily LeetCode question posting schedule
-/checkLC - Check the status of the daily LeetCode posting schedule`,
+/checkLC - Check the status of the daily LeetCode posting schedule
+/startCensorship - Activate election content filter
+/stopCensorship - Deactivate election content filter
+/checkCensorship - Check status of election content filter`,
     {
       message_thread_id: msgThreadId,
       reply_to_message_id: messageId,
@@ -959,13 +962,82 @@ bot.onText(/\/stopTbills/i, async (msg) => {
 });
 
 // Election-related content filter
+let chatIdCensorshipStatusMap = {};
+
+// Command to toggle election content filter
+bot.onText(/\/startCensorship/i, async (msg) => {
+  if (!checkAdmin(msg)) {
+    return;
+  }
+  const chatId = msg.chat.id;
+  const msgThreadId = msg.message_thread_id;
+  const messageId = msg.message_id;
+
+  chatIdCensorshipStatusMap[chatId] = true;
+  const reply = `Election content filter activated for this chat.`;
+  bot.sendMessage(chatId, reply, {
+    message_thread_id: msgThreadId,
+    reply_to_message_id: messageId,
+  });
+
+  console.log(`Election content filter activated for chatId: ${chatId}`);
+});
+
+// Command to turn off election content filter
+bot.onText(/\/stopCensorship/i, async (msg) => {
+  if (!checkAdmin(msg)) {
+    return;
+  }
+  const chatId = msg.chat.id;
+  const msgThreadId = msg.message_thread_id;
+  const messageId = msg.message_id;
+
+  chatIdCensorshipStatusMap[chatId] = false;
+  const reply = `Election content filter deactivated for this chat.`;
+  bot.sendMessage(chatId, reply, {
+    message_thread_id: msgThreadId,
+    reply_to_message_id: messageId,
+  });
+
+  console.log(`Election content filter deactivated for chatId: ${chatId}`);
+});
+
+// Check censorship status
+bot.onText(/\/checkCensorship/i, async (msg) => {
+  if (!checkAdmin(msg)) {
+    return;
+  }
+  const chatId = msg.chat.id;
+  const msgThreadId = msg.message_thread_id;
+  const messageId = msg.message_id;
+
+  const status =
+    chatIdCensorshipStatusMap[chatId] === true
+      ? "active"
+      : chatIdCensorshipStatusMap[chatId] === false
+      ? "inactive"
+      : "not set";
+
+  const reply = `Election content filter status for this chat: ${status}`;
+  bot.sendMessage(chatId, reply, {
+    message_thread_id: msgThreadId,
+    reply_to_message_id: messageId,
+  });
+});
+
 bot.on("message", async (msg) => {
   const messageId = msg.message_id;
   const messageContent = msg.text || msg.caption;
   const chatId = msg.chat.id;
   const msgThreadId = msg.message_thread_id;
+  const namePart = getNameForReply(msg);
 
   if (!messageContent) {
+    return;
+  }
+
+  // Skip election check if censorship is explicitly disabled for this chat
+  if (chatIdCensorshipStatusMap[chatId] === false) {
     return;
   }
 
@@ -981,10 +1053,10 @@ bot.on("message", async (msg) => {
       .then(() => {
         console.log(`Deleted election-related message: ${messageId}`);
 
-        // Send a notification about the deletion
+        // Send a notification about the deletion with the user tag
         bot.sendMessage(
           chatId,
-          "Deleted message as it contained election-related content.",
+          `${namePart}, your message was deleted as it contained election-related content.`,
           {
             message_thread_id: msgThreadId,
           }

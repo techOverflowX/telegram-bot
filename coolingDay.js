@@ -15,7 +15,7 @@ async function isElectionRelated(message) {
         {
           role: "system",
           content:
-            "You are a content moderator that detects election-related messages. Respond with only 'YES' if the message contains election-related content (including candidates, voting, campaigns, political parties, election processes, or policy debates related to elections). Singapore election key words are GE2025,PAP,WP,PSP Otherwise, respond with only 'NO'.",
+            "You are a content moderator that detects election-related messages. Respond with only 'YES' if the message contains election-related content (including candidates, voting, campaigns, political parties, election processes, or policy debates related to elections). Singapore election key words are GE2025,PAP,WP,PSP,party ,vote, lighting, hammer. Otherwise, respond with only 'NO'.",
         },
         {
           role: "user",
