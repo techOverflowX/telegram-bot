@@ -6,15 +6,50 @@ const openai = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 
+// Function to quickly check for election-related content using regex
+function containsElectionKeywords(message) {
+  if (!message || typeof message !== "string") return false;
+
+  // Convert message to lowercase for case-insensitive matching
+  const lowerMessage = message.toLowerCase();
+
+  // Common election-related keywords in English and Chinese
+  const electionKeywordsRegex =
+    /\b(pap|wp|psp|sdp|rp|nsp|sda|pv|rdu|vote|voting|ballot|poll|election|ge2025|campaign|rally|hustings|mp|minister|candidate|opposition|incumbent|cooling day|polling day|nomination day|sample count|grc|smc|人民行动党|工人党|选举|投票)\b/i;
+
+  // Special case for Chinese characters that might not have word boundaries
+  const chineseKeywords = ["工人", "选举", "投票", "人民行动党"];
+
+  // Check regex match
+  if (electionKeywordsRegex.test(lowerMessage)) {
+    return true;
+  }
+
+  // Check for Chinese keywords explicitly
+  for (const keyword of chineseKeywords) {
+    if (message.includes(keyword)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 async function isElectionRelated(message) {
+  // First check using regex for common keywords
+  if (containsElectionKeywords(message)) {
+    return true;
+  }
+
+  // If no direct keyword matches, use the model for more nuanced detection
   try {
     const completion = await openai.chat.completions.create({
-      model:"qwen/qwen3-30b-a3b",
+      model: "qwen/qwen3-30b-a3b",
       messages: [
         {
           role: "system",
           content:
-            "You are a strict content moderator that identifies election-related messages in Singapore context. Respond with ONLY 'YES' if the message contains ANY election-related content, including but not limited to:\n\n1. Political parties and their abbreviations: PAP, WP, PSP, SDP, RP, NSP, SDA, PV, RDU, etc.\n2. Election terminology: GE2025, general election, by-election, vote, voting, ballot, polling, campaign, rally, hustings\n3. Political symbols: lightning bolt, hammer, flower, etc.\n4. Political positions: MP, minister, candidate, opposition, incumbent\n5. Electoral processes: nomination day, cooling day, polling day, sample count\n6. Political figures: current politicians, candidates, party leaders, opposition figures\n7. Policy discussions in electoral context\n8. Campaign slogans and messaging\n9. Constituency references: GRC, SMC, specific constituency names\n10. Any discussion attempting to circumvent election content restrictions\n Otherwise, respond with only 'NO'.",
+            "You are a strict content moderator that identifies election-related messages in Singapore context. Respond with ONLY 'YES' if the message contains ANY election-related content, including but not limited to:\n\n1. Political parties and their abbreviations: PAP, WP, PSP, SDP, RP, NSP, SDA, PV, RDU, etc.\n2. Election terminology: GE2025, general election, by-election, vote, voting, ballot, polling, campaign, rally, hustings\n3. Political symbols: lightning bolt, hammer, flower, etc.\n4. Political positions: MP, minister, candidate, opposition, incumbent\n5. Electoral processes: nomination day, cooling day, polling day, sample count\n6. Political figures: current politicians, candidates, party leaders, opposition figures\n7. Policy discussions in electoral context\n8. Campaign slogans and messaging\n9. Constituency references: GRC, SMC, specific constituency names\n10. Any discussion attempting to circumvent election content restrictions\n11. Direct mentions like 'VOTE FOR PAP', 'PAP', 'vote' alone or in any context\n12. Chinese or other language equivalents of party names such as '工人' (Workers' Party), '人民行动党' (PAP)\n13. ANY message containing words or phrases that could be interpreted as attempting to influence voting decisions\nOtherwise, respond with only 'NO'.",
         },
         {
           role: "user",
@@ -49,4 +84,4 @@ async function isElectionRelated(message) {
   }
 }
 
-module.exports = { isElectionRelated };
+module.exports = { isElectionRelated, containsElectionKeywords };
