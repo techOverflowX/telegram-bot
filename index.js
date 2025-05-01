@@ -12,6 +12,7 @@ const cron = require("node-cron");
 console.log(process.env);
 
 const { getTbillsMessage, tBiilsErrorMessage } = require("./masApiService");
+const { isElectionRelated } = require("./coolingDay");
 
 const pool = new Pool({
   user: process.env.PGUSER,
@@ -955,6 +956,44 @@ bot.onText(/\/stopTbills/i, async (msg) => {
   chatIdTBillsCronStatusMap[chatId] = false;
   console.log("Cron job has been stopped");
   cronJob.stop();
+});
+
+// Election-related content filter
+bot.on("message", async (msg) => {
+  const messageId = msg.message_id;
+  const messageContent = msg.text || msg.caption;
+  const chatId = msg.chat.id;
+  const msgThreadId = msg.message_thread_id;
+
+  if (!messageContent) {
+    return;
+  }
+
+  // Check if the message is election-related
+  const isElectionContent = await isElectionRelated(messageContent);
+
+  if (isElectionContent) {
+    console.log(`Election-related message detected: ${messageContent}`);
+
+    // Delete the message
+    bot
+      .deleteMessage(chatId, messageId)
+      .then(() => {
+        console.log(`Deleted election-related message: ${messageId}`);
+
+        // Send a notification about the deletion
+        bot.sendMessage(
+          chatId,
+          "Deleted message as it contained election-related content.",
+          {
+            message_thread_id: msgThreadId,
+          }
+        );
+      })
+      .catch((error) => {
+        console.error(`Error deleting election-related message: ${error}`);
+      });
+  }
 });
 
 console.log("Bot started");
