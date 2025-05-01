@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+const OpenAI = require("openai");
 
 // Initialize OpenAI client with OpenRouter
 const openai = new OpenAI({
