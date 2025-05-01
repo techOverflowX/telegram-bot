@@ -15,10 +15,30 @@ function containsElectionKeywords(message) {
 
   // Common election-related keywords in English and Chinese
   const electionKeywordsRegex =
-    /\b(pap|wp|psp|sdp|rp|nsp|sda|pv|rdu|vote|voting|ballot|poll|election|ge2025|campaign|rally|hustings|mp|minister|candidate|opposition|incumbent|cooling day|polling day|nomination day|sample count|grc|smc|人民行动党|工人党|选举|投票)\b/i;
+    /\b(pap|wp|psp|sdp|rp|nsp|sda|pv|rdu|vote|voting|ballot|poll|election|ge2025|campaign|rally|hustings|mp|minister|candidate|opposition|incumbent|cooling day|polling day|nomination day|sample count|grc|smc|人民行动党|工人党|选举|投票|lee hsien loong|lawrence wong|tharman|pritam singh|jamus lim|leong mun wai|tan cheng bock|chee soon juan|lim tean|nicole seah|he ting ru|leon perera|low thia khiang|sylvia lim|chan chun sing|gan kim yong|josephine teo|teo chee hean|heng swee keat|desmond lee|ong ye kung)\b/i;
 
   // Special case for Chinese characters that might not have word boundaries
-  const chineseKeywords = ["工人", "选举", "投票", "人民行动党"];
+  const chineseKeywords = [
+    "工人",
+    "选举",
+    "投票",
+    "人民行动党",
+    "李显龙",
+    "黄循财",
+    "达曼",
+    "毕丹星",
+    "林恩临",
+    "梁文辉",
+    "陈清木",
+    "徐顺全",
+    "林添",
+    "佘雪玲",
+    "何廷儒",
+    "刘程强",
+    "陈振声",
+    "颜永勤",
+    "王乙康",
+  ];
 
   // Check regex match
   if (electionKeywordsRegex.test(lowerMessage)) {
