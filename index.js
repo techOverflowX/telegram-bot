@@ -1068,4 +1068,53 @@ bot.on("message", async (msg) => {
   }
 });
 
+// Event listener for edited messages
+bot.on("edited_message", async (msg) => {
+  console.log("Message edited:", msg);
+  const messageId = msg.message_id;
+  const messageContent = msg.text || msg.caption;
+  const chatId = msg.chat.id;
+  const msgThreadId = msg.message_thread_id;
+  const namePart = getNameForReply(msg);
+
+  if (!messageContent) {
+    return;
+  }
+
+  // Skip election check if censorship is explicitly disabled for this chat
+  if (chatIdCensorshipStatusMap[chatId] === false) {
+    return;
+  }
+
+  // Check if the edited message is election-related
+  const isElectionContent = await isElectionRelated(messageContent);
+
+  if (isElectionContent) {
+    console.log(
+      `Election-related content detected in edited message: ${messageContent}`
+    );
+
+    // Delete the message
+    bot
+      .deleteMessage(chatId, messageId)
+      .then(() => {
+        console.log(`Deleted election-related edited message: ${messageId}`);
+
+        // Send a notification about the deletion with the user tag
+        bot.sendMessage(
+          chatId,
+          `${namePart}, your edited message was deleted as it contained election-related content.`,
+          {
+            message_thread_id: msgThreadId,
+          }
+        );
+      })
+      .catch((error) => {
+        console.error(
+          `Error deleting election-related edited message: ${error}`
+        );
+      });
+  }
+});
+
 console.log("Bot started");
