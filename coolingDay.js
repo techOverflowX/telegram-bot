@@ -369,12 +369,60 @@ function checkElectionMessagingPatterns(message) {
   return false;
 }
 
+// Function to detect ASCII art patterns
+function containsASCIIArt(message) {
+  if (!message || typeof message !== "string") return false;
+
+  // Check for multi-line content with patterns typical of ASCII art
+  const lines = message.split("\n");
+
+  // If message has multiple lines and contains characters commonly used in ASCII art
+  if (lines.length >= 3) {
+    // Count lines with special characters used in ASCII art
+    const asciiArtChars = /[\/\\|_\-+=<>^*()[\]{}]/;
+    const linesWithArtChars = lines.filter((line) =>
+      asciiArtChars.test(line)
+    ).length;
+
+    // If more than 50% of lines contain ASCII art characters, it's likely ASCII art
+    if (linesWithArtChars >= lines.length * 0.5) {
+      return true;
+    }
+  }
+
+  // Check for patterns commonly used in single-line ASCII art
+  const singleLineArtPatterns = [
+    /\/---\//, // Lightning patterns
+    /\/__ ?</, // Hammer patterns
+    /[\/\\]{2,}[_\-=]{2,}/, // Common ASCII art segments
+    /[<>]{2,}[_\-=]{2,}/, // Arrow-like patterns
+    /\(\s*[_\-=]{2,}\s*\)/, // Parenthesis with lines
+    /\[\s*[_\-=]{2,}\s*\]/, // Brackets with lines
+    /\|\s*[_\-=]{2,}\s*\|/, // Vertical bars with lines
+  ];
+
+  for (const pattern of singleLineArtPatterns) {
+    if (pattern.test(message)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 async function isElectionRelated(message, userId = null) {
   // First check cache to avoid redundant processing
   const cachedResult = await checkMessageInDatabase(message);
   if (cachedResult !== null && cachedResult !== undefined) {
     console.log("Cache hit for message:", message);
     return cachedResult.flagged === 1;
+  }
+
+  // Check for ASCII art
+  if (containsASCIIArt(message)) {
+    // Cache the result and return
+    await addMessageToDatabase(message, true);
+    return true;
   }
 
   // Check for sequential character messages if userId is provided
@@ -402,7 +450,7 @@ async function isElectionRelated(message, userId = null) {
         {
           role: "system",
           content:
-            "You are a strict content moderator that identifies election-related messages in Singapore context. Respond with ONLY 'YES' if the message contains ANY election-related content, including but not limited to:\n\n1. Political parties and their abbreviations: PAP, WP, PSP, SDP, RP, NSP, SDA, PV, RDU, etc.\n2. Election terminology: GE2025, general election, by-election, vote, voting, ballot, polling, campaign, rally, hustings\n3. Political symbols: lightning bolt, hammer, flower, etc.\n4. Political positions: MP, minister, candidate, opposition, incumbent\n5. Electoral processes: nomination day, cooling day, polling day, sample count\n6. Political figures: current politicians, candidates, party leaders, opposition figures\n7. Policy discussions in electoral context\n8. Campaign slogans and messaging\n9. Constituency references: GRC, SMC, specific constituency names\n10. Any discussion attempting to circumvent election content restrictions\n11. Direct mentions like 'VOTE FOR PAP', 'PAP', 'vote' alone or in any context\n12. Chinese or other language equivalents of party names such as '工人' (Workers' Party), '人民行动党' (PAP)\n13. ANY message containing words or phrases or acrostic messages that could be interpreted as attempting to influence voting decisions\n14. References to 'alternative voices' and their capabilities or limitations\n15. Messages about leaders 'working on the ground' or implying competence comparisons\n16. References to giving 'confidence' to teams/governments or mandates\n17. Mentions of teams that have been governing/steering the country for any number of years\n18. Rhetoric about stability, experience, or track records in a way that could influence voting\n19. Implied criticisms of opposition parties or ruling parties without naming them directly\n20. Suggestions about what voters 'need' to do or what the country 'needs' politically\nOtherwise, respond with only 'NO'.",
+            "You are a strict content moderator that identifies election-related messages in Singapore context. Respond with ONLY 'YES' if the message contains ANY election-related content, including but not limited to:\n\n1. Political parties and their abbreviations: PAP, WP, PSP, SDP, RP, NSP, SDA, PV, RDU, etc.\n2. Election terminology: GE2025, 2025GE, GE, faction, general election, by-election, vote, voting, ballot, polling, campaign, rally, hustings\n3. Political symbols: lightning bolt, hammer, flower, etc.\n4. Political positions: MP, minister, candidate, opposition, incumbent\n5. Electoral processes: nomination day, cooling day, polling day, sample count\n6. Political figures: current politicians, candidates, party leaders, opposition figures\n7. Policy discussions in electoral context\n8. Campaign slogans and messaging\n9. Constituency references: GRC, SMC, specific constituency names\n10. Any discussion attempting to circumvent election content restrictions\n11. Direct mentions like 'VOTE FOR PAP', 'PAP', 'vote' alone or in any context\n12. Chinese or other language equivalents of party names such as '工人' (Workers' Party), '人民行动党' (PAP)\n13. ANY message containing words or phrases or acrostic messages that could be interpreted as attempting to influence voting decisions\n14. References to 'alternative voices' and their capabilities or limitations\n15. Messages about leaders 'working on the ground' or implying competence comparisons\n16. References to giving 'confidence' to teams/governments or mandates\n17. Mentions of teams that have been governing/steering the country for any number of years\n18. Rhetoric about stability, experience, or track records in a way that could influence voting\n19. Implied criticisms of opposition parties or ruling parties without naming them directly\n20. Suggestions about what voters 'need' to do or what the country 'needs' politically\nOtherwise, respond with only 'NO'.",
         },
         {
           role: "user",
@@ -548,17 +596,91 @@ async function testCacheSystem() {
   console.log("\nCache demonstration complete!");
 }
 
+// Add test function for ASCII art detection
+async function testASCIIArtDetection() {
+  console.log("Testing ASCII art detection...");
+
+  const testCases = [
+    // Should detect as ASCII art
+    {
+      message: `/---/
+  /   /
+ /   /
+/__ <
+  /  /
+ / /
+//`,
+      expected: true,
+      description: "Lightning/hammer pattern",
+    },
+    {
+      message: `   /\\
+  /  \\
+ /    \\
+/______\\`,
+      expected: true,
+      description: "Triangle/house",
+    },
+    {
+      message: `+-----+
+|     |
++-----+`,
+      expected: true,
+      description: "Box",
+    },
+    {
+      message: `>>------>`,
+      expected: true,
+      description: "Arrow",
+    },
+    // Should not detect as ASCII art
+    {
+      message: "This is a normal message without ASCII art.",
+      expected: false,
+      description: "Normal text",
+    },
+    {
+      message: "I use / and \\ in regular text sometimes.",
+      expected: false,
+      description: "Text with some special chars",
+    },
+    {
+      message: "Check out example.com/path/to/file.js",
+      expected: false,
+      description: "URL with slashes",
+    },
+  ];
+
+  for (const testCase of testCases) {
+    const result = containsASCIIArt(testCase.message);
+    console.log(`Test: ${testCase.description}`);
+    console.log(
+      `Input: ${
+        testCase.message.length > 50
+          ? testCase.message.substring(0, 50) + "..."
+          : testCase.message
+      }`
+    );
+    console.log(`Expected: ${testCase.expected}, Actual: ${result}`);
+    console.log(`Result: ${result === testCase.expected ? "PASS" : "FAIL"}`);
+    console.log("---");
+  }
+}
+
 // Uncomment to run tests
 // testSubtleElectionMessages();
 // testCacheSystem();
+// testASCIIArtDetection();
 
 module.exports = {
   isElectionRelated,
   containsElectionKeywords,
   checkSequentialCharacters,
+  containsASCIIArt,
   // Export test functions
   testSubtleElectionMessages,
   testCacheSystem,
+  testASCIIArtDetection,
   // Export cache functions
   getCacheStats,
 };
