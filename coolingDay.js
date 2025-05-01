@@ -9,7 +9,7 @@ const openai = new OpenAI({
 async function isElectionRelated(message) {
   try {
     const completion = await openai.chat.completions.create({
-      model: "qwen/qwen3-4b:free",
+      model: "mistral/ministral-8b",
       messages: [
         {
           role: "system",
