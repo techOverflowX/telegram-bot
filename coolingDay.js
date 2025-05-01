@@ -44,7 +44,7 @@ function containsElectionKeywords(message) {
 
   // Common election-related keywords in English and Chinese
   const electionKeywordsRegex =
-    /\b(pap|wp|psp|sdp|rp|nsp|sda|pv|rdu|vote|voting|ballot|poll|election|ge2025|campaign|rally|hustings|mp|minister|candidate|opposition|incumbent|cooling day|polling day|nomination day|sample count|grc|smc|人民行动党|工人党|选举|投票|lee hsien loong|lawrence wong|tharman|pritam singh|jamus lim|leong mun wai|tan cheng bock|chee soon juan|lim tean|nicole seah|he ting ru|leon perera|low thia khiang|sylvia lim|chan chun sing|gan kim yong|josephine teo|teo chee hean|heng swee keat|desmond lee|ong ye kung|lightning|hammer|flower|sunflower|fist|heart|ballot box|chart|check|cross|star)\b/i;
+    /\b(party|partis|pap|wp|psp|sdp|rp|nsp|sda|pv|rdu|vote|voting|ballot|poll|election|ge2025|campaign|rally|hustings|mp|minister|candidate|opposition|incumbent|cooling day|polling day|nomination day|sample count|grc|smc|人民行动党|工人党|选举|投票|lee hsien loong|lawrence wong|tharman|pritam singh|jamus lim|leong mun wai|tan cheng bock|chee soon juan|lim tean|nicole seah|he ting ru|leon perera|low thia khiang|sylvia lim|chan chun sing|gan kim yong|josephine teo|teo chee hean|heng swee keat|desmond lee|ong ye kung|lightning|hammer|flower|sunflower|fist|heart|ballot box|chart|check|cross|star)\b/i;
 
   // Special case for Chinese characters that might not have word boundaries
   const chineseKeywords = [
