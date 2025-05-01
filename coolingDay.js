@@ -18,11 +18,31 @@ const db = new sqlite3.Database("./election_messages.db", (err) => {
       (err) => {
         if (err) {
           console.error("Error creating table:", err.message);
+        } else {
+          // Clean up non-flagged messages on startup
+          clearNonFlaggedMessages();
         }
       }
     );
   }
 });
+
+// Function to clear all non-flagged messages from the database
+function clearNonFlaggedMessages() {
+  return new Promise((resolve, reject) => {
+    db.run("DELETE FROM election_messages WHERE flagged = 0", function (err) {
+      if (err) {
+        console.error("Error clearing non-flagged messages:", err.message);
+        reject(err);
+      } else {
+        console.log(
+          `Cleared ${this.changes} non-flagged messages from database.`
+        );
+        resolve(this.changes);
+      }
+    });
+  });
+}
 
 // Function to hash a message for database storage
 function hashMessage(message) {
@@ -683,4 +703,5 @@ module.exports = {
   testASCIIArtDetection,
   // Export cache functions
   getCacheStats,
+  clearNonFlaggedMessages,
 };
