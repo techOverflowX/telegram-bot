@@ -372,7 +372,7 @@ function checkElectionMessagingPatterns(message) {
 async function isElectionRelated(message, userId = null) {
   // First check cache to avoid redundant processing
   const cachedResult = await checkMessageInDatabase(message);
-  if (cachedResult !== null) {
+  if (cachedResult !== null && cachedResult !== undefined) {
     console.log("Cache hit for message:", message);
     return cachedResult.flagged === 1;
   }
