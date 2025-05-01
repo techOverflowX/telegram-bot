@@ -6,6 +6,50 @@ const openai = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 
+// Track recent messages to detect sequential character messages
+const recentMessagesMap = new Map(); // userId -> { messages: string[], timestamp: number }
+
+// Function to track and detect sequential character messages
+function checkSequentialCharacters(userId, messageText) {
+  const now = Date.now();
+
+  // Initialize or get user data
+  if (!recentMessagesMap.has(userId)) {
+    recentMessagesMap.set(userId, { messages: [], timestamp: now });
+  }
+
+  const userData = recentMessagesMap.get(userId);
+
+  // If more than 60 seconds passed since last message, reset the tracking
+  if (now - userData.timestamp > 60000) {
+    userData.messages = [];
+  }
+
+  // Update timestamp
+  userData.timestamp = now;
+
+  // If message is a single character or very short, add to tracked messages
+  if (messageText.trim().length <= 2) {
+    userData.messages.push(messageText.trim());
+
+    // Keep only last 15 messages
+    if (userData.messages.length > 15) {
+      userData.messages.shift();
+    }
+
+    // Combine the recent messages and check if they form election content
+    const combinedMessage = userData.messages.join("");
+    if (containsElectionKeywords(combinedMessage)) {
+      return true;
+    }
+  } else {
+    // For longer messages, don't track but still check the current message
+    userData.messages = []; // Reset tracking for non-sequential messages
+  }
+
+  return false;
+}
+
 // Function to quickly check for election-related content using regex
 function containsElectionKeywords(message) {
   if (!message || typeof message !== "string") return false;
@@ -125,7 +169,12 @@ function containsElectionKeywords(message) {
   return false;
 }
 
-async function isElectionRelated(message) {
+async function isElectionRelated(message, userId = null) {
+  // Check for sequential character messages if userId is provided
+  if (userId && checkSequentialCharacters(userId, message)) {
+    return true;
+  }
+
   // First check using regex for common keywords
   if (containsElectionKeywords(message)) {
     return true;
@@ -174,4 +223,8 @@ async function isElectionRelated(message) {
   }
 }
 
-module.exports = { isElectionRelated, containsElectionKeywords };
+module.exports = {
+  isElectionRelated,
+  containsElectionKeywords,
+  checkSequentialCharacters,
+};
