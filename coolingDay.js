@@ -20,31 +20,55 @@ function checkSequentialCharacters(userId, messageText) {
 
   const userData = recentMessagesMap.get(userId);
 
-  // If more than 60 seconds passed since last message, reset the tracking
-  if (now - userData.timestamp > 60000) {
+  // If more than 5 minutes passed since last message, reset the tracking
+  // Using longer timeout to catch attempts with intentional delays
+  if (now - userData.timestamp > 300000) {
     userData.messages = [];
   }
 
   // Update timestamp
   userData.timestamp = now;
 
-  // If message is a single character or very short, add to tracked messages
-  if (messageText.trim().length <= 2) {
-    userData.messages.push(messageText.trim());
+  // If message is a short text (up to 3 characters), add to tracked messages
+  if (messageText.trim().length <= 3) {
+    userData.messages.push(messageText.trim().toLowerCase()); // Convert to lowercase for case-insensitive matching
 
-    // Keep only last 15 messages
-    if (userData.messages.length > 15) {
+    // Keep only last 30 messages to detect longer attempts
+    if (userData.messages.length > 30) {
       userData.messages.shift();
     }
 
-    // Combine the recent messages and check if they form election content
+    // Combine the recent messages with and without spaces to check different patterns
     const combinedMessage = userData.messages.join("");
-    if (containsElectionKeywords(combinedMessage)) {
+    const combinedWithSpaces = userData.messages.join(" ");
+
+    // Check both versions
+    if (
+      containsElectionKeywords(combinedMessage) ||
+      containsElectionKeywords(combinedWithSpaces)
+    ) {
       return true;
     }
+
+    // Also check for partial matches to catch incomplete attempts
+    const politicalPhrases = [
+      "vote",
+      "pap",
+      "wp",
+      "psp",
+      "sdp",
+      "votefor",
+      "votepap",
+      "election",
+    ];
+    for (const phrase of politicalPhrases) {
+      if (combinedMessage.includes(phrase)) {
+        return true;
+      }
+    }
   } else {
-    // For longer messages, don't track but still check the current message
-    userData.messages = []; // Reset tracking for non-sequential messages
+    // For longer messages, check the current message but don't reset tracking
+    // This allows detection even if some normal messages are interspersed
   }
 
   return false;
