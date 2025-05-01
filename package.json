@@ -17,7 +17,8 @@
     "node-cron": "^3.0.2",
     "node-telegram-bot-api": "^0.60.0",
     "openai": "^4.96.2",
-    "pg": "^8.8.0"
+    "pg": "^8.8.0",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@types/node-telegram-bot-api": "^0.57.6",
