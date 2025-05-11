@@ -11,7 +11,7 @@ const redis = new Redis(process.env.REDIS_URL);
 const cron = require("node-cron");
 console.log(process.env);
 
-const { getTbillsMessage, tBiilsErrorMessage } = require("./masApiService");
+const { getTbillsMessage, getTBiilsErrorMessage } = require("./masApiService");
 const { isElectionRelated } = require("./coolingDay");
 
 const pool = new Pool({
@@ -877,6 +877,7 @@ bot.onText(/\/tbills/i, async (msg) => {
     });
   } catch (error) {
     console.log("[index.tbills] error getting tbills", error);
+    const tBiilsErrorMessage = getTBiilsErrorMessage();
     bot.sendMessage(chatId, tBiilsErrorMessage, {
       message_thread_id: msgThreadId,
       reply_to_message_id: messageId,

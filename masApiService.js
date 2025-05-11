@@ -4,10 +4,18 @@
 const axios = require("axios");
 const { MASResponse, TBillsIssuanceRecord, TBillsAuctionRecord } = require('./masDataTypes');
 
-// Global variable for today's date in GMT+8
-const today = new Date();
-// shift time to GMT+8
-today.setHours(today.getHours() + 8);
+/**
+ * Returns the date now (GMT +8)
+ * @returns {Date} date_obj
+ */
+function getDateNow() {
+    // Global variable for today's date in GMT+8
+    const today = new Date();
+    // shift time to GMT+8
+    today.setHours(today.getHours() + 8);
+
+    return today;
+}
 
 /**
  * Formats a Date object into a string of the format YYYY-MM-DD.
@@ -197,7 +205,7 @@ class MASApiService {
  *
  * This function fetches T-Bills issuance history from the MAS API service. It calculates 
  * the date range for the past month to filter the issuance history data and returns 
- * the most recent issuance record for the specified tenor.
+ * the most recent (sort by auction date) issuance record for the specified tenor.
  *
  * @async
  * @function getRecentTbills
@@ -219,6 +227,7 @@ async function getRecentTbills({tenor = 0.5} = {}) {
     const api = new MASApiService();
 
     const lastMonth = new Date();
+    const today = getDateNow();
 
     // Set the date to one month prior
     lastMonth.setMonth(today.getMonth() - 1);
@@ -234,10 +243,10 @@ async function getRecentTbills({tenor = 0.5} = {}) {
             rows: 10,
             sort: "auction_date desc"});
 
-        console.log(`[getNextTbills] got response of size ${response.result.total}`);
+        console.log(`[getRecentTbills] got response of size ${response.result.total}`);
         return new TBillsAuctionRecord(response.result.records[0]);
     } catch(error) {
-        console.log(`[getNextTbills] got error ${error}`);
+        console.log(`[getRecentTbills] got error ${error}`);
         return new TBillsAuctionRecord();
     };
 }
@@ -246,8 +255,9 @@ async function getRecentTbills({tenor = 0.5} = {}) {
  * Asynchronously retrieves the next T-Bills issuance details based on the specified tenor.
  *
  * This function fetches T-Bills issuance records from the MAS API service. It 
- * calculates the date range for the past week to filter the issuance calendar 
- * data, and it returns the most recent issuance record for the specified tenor.
+ * calculates the date range for the past month to filter the issuance calendar 
+ * data, and it returns the most recent (sort by announcement date) issuance record 
+ * for the specified tenor.
  *
  * @async
  * @function getNextTbills
@@ -268,13 +278,14 @@ async function getNextTbills({tenor = 0.5} = {}) {
 
     const api = new MASApiService();
 
-    const lastWeek = new Date();
+    const nextMonth = new Date();
+    const today = getDateNow();
 
     // get next month's date
-    lastWeek.setDate(today.getDate() - 7);
+    nextMonth.setMonth(today.getMonth() + 1);
 
-    const startDate = formatDate(lastWeek);
-    const endDate = formatDate(today);
+    const startDate = formatDate(today);
+    const endDate = formatDate(nextMonth);
 
     try {
         const response = await api.getTBillsIssuanceCalendar({
@@ -282,7 +293,7 @@ async function getNextTbills({tenor = 0.5} = {}) {
             endDate: endDate, 
             auctionTenor: tenor, 
             rows: 10,
-            sort: "auction_date desc"});
+            sort: "ann_date asc"});
 
         console.log(`[getNextTbills] got response of size ${response.result.total}`);
         return new TBillsIssuanceRecord(response.result.records[0]);
@@ -293,8 +304,11 @@ async function getNextTbills({tenor = 0.5} = {}) {
 }
 
 const tbillsURL = "https://www.mas.gov.sg/bonds-and-bills/singapore-government-t-bills-information-for-individuals";
-const tBiilsErrorMessage = `💰* Daily T-Bills ${formatDate(today)}*💰
+function getTBiilsErrorMessage() {
+    const message = `💰* Daily T-Bills ${formatDate(getDateNow())}*💰
 Current T-Bills information is not available. Please visit ${tbillsURL}`;
+    return message;
+}
 
 /**
  * Asynchronously retrieves and formats a message containing information about
@@ -313,7 +327,7 @@ Current T-Bills information is not available. Please visit ${tbillsURL}`;
  * containing details of the next and recent T-Bills.
  *
  * @throws {Error} Throws an error if there is a problem retrieving the T-Bills data.
- * The error is logged, and a predefined error message (`tBiilsErrorMessage`) is returned
+ * The error is logged, and a predefined error message (`getTBiilsErrorMessage`) is returned
  * in case of failure.
  */
 async function getTbillsMessage() {
@@ -322,6 +336,7 @@ async function getTbillsMessage() {
     const daysOfWeek = [
         "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
     ];
+    const today = getDateNow();
 
     try {
         const nextTbills = await getNextTbills({tenor: 0.5});
@@ -330,7 +345,7 @@ async function getTbillsMessage() {
         console.log("[index.tbills] got recent tbills", recentTbills);
 
         if (nextTbills.issueCode == "" || recentTbills == "") {
-            return tBiilsErrorMessage;
+            return getTBiilsErrorMessage();
         }
 
         reply = `💰* Daily T-Bills ${formatDate(today)} (${daysOfWeek[today.getDay()]})* 💰
@@ -354,7 +369,7 @@ ${recentTbills.getURL()}
         return reply;
       } catch (error) {
         console.log("[index.tbills] error getting tbills", error);
-        return tBiilsErrorMessage;
+        return getTBiilsErrorMessage();
       }
 }
 
@@ -364,5 +379,5 @@ module.exports = {
     getRecentTbills,
     getNextTbills,
     getTbillsMessage,
-    tBiilsErrorMessage,
+    getTBiilsErrorMessage,
 };
