@@ -293,7 +293,7 @@ async function getNextTbills({tenor = 0.5} = {}) {
             endDate: endDate, 
             auctionTenor: tenor, 
             rows: 10,
-            sort: "ann_date asc"});
+            sort: "auction_date asc"});
 
         console.log(`[getNextTbills] got response of size ${response.result.total}`);
         return new TBillsIssuanceRecord(response.result.records[0]);
