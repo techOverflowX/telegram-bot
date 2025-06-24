@@ -1,5 +1,5 @@
 import { getNameForReply } from "../../../common/getNameForReply";
-import { TWENTY_FOUR_HOURS } from "../../../constants/constants";
+import { MINIMUM_APPROVAL_PERCENTAGE, MINIMUM_REQUIRED_VOTES, TWENTY_FOUR_HOURS } from "../../../constants/constants";
 import { closeDaoVoteProposal } from "./closeDaoVoteProposal";
 
 export async function createDaoVoteProposal(bot, message, match) {
@@ -36,7 +36,7 @@ ${usernameOfProposer} is currently proposing to create a DAO Vote with:
 
 ${proposedPollTitle}
 
-A minimum of 50 votes and an approval rate of 75% is required for the proposal to pass.
+A minimum of ${MINIMUM_REQUIRED_VOTES} votes and an approval rate of ${MINIMUM_APPROVAL_PERCENTAGE * 100}% is required for the proposal to pass.
 The poll will be open for 24 hours.
     `
 

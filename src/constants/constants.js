@@ -1,1 +1,3 @@
 export const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+export const MINIMUM_APPROVAL_PERCENTAGE = 0.75;
+export const MINIMUM_REQUIRED_VOTES = 30;
