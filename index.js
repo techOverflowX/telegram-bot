@@ -281,20 +281,29 @@ bot.onText(/!bot ((?:.|\n|\r)+)/, async (msg, match) => {
   });
 });
 
+async function translateToEnglish(messageContent) {
+  try {
+    const detectLanguageRequest = await axios.get(`https://winstxnhdw-nllb-api.hf.space/api/v4/language?text=${encodeURIComponent(messageContent.slice(0, 512))}`);
+    const translateLanguageRequest = await axios.get(`https://winstxnhdw-nllb-api.hf.space/api/v4/translator?text=${encodeURIComponent(messageContent)}&source=${detectLanguageRequest.data.language}&target=eng_Latn`)
+
+    return translateLanguageRequest.data.result;
+
+  }
+
+  catch {
+    return undefined;
+  }
+}
+
 async function handleNonEnglish(namePart, messageContent, messageId, chatId) {
   console.log(`Handle Non-English Content: ${messageContent}`);
   let reply = `${RECURSIVE_MARKER} failed. \nHi, ${namePart}. This is an automated reminder to use English in this group so that everyone can understand. 😊`;
   // let reply = `Non-English message detected. ${RECURSIVE_MARKER} failed.`;
 
-  // redirect to Din bot
-  const dinBotResponseText = await getDinBotResponse(
-    `translate to English: ${messageContent}`,
-    namePart,
-    chatId
-  );
+  const translateText = await translateToEnglish(messageContent);
 
-  if (dinBotResponseText) {
-    reply = `Non-English message detected. ${RECURSIVE_MARKER}:\n${dinBotResponseText}`;
+  if (translateText) {
+    reply = `Non-English message detected. ${RECURSIVE_MARKER}:\n${translateText}`;
   }
 
   console.log(`Reply: ${reply}`);
@@ -778,7 +787,7 @@ bot.onText(/^[!/](cmd|help)\b/i, (msg) => {
   bot.sendMessage(
     chatId,
     `Here are the available commands:
-    
+
 *General Commands:*
 /bot <term> - Get definition or explanation for a term
 /summarise or /summarize - Reply to a message to summarize its content
