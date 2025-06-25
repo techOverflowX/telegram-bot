@@ -283,11 +283,10 @@ bot.onText(/!bot ((?:.|\n|\r)+)/, async (msg, match) => {
 
 async function translateToEnglish(messageContent) {
   try {
-    const detectLanguageRequest = await axios.get(`https://winstxnhdw-nllb-api.hf.space/api/v4/language?text=${encodeURIComponent(messageContent.slice(0, 512))}`);
+    const detectLanguageRequest = await axios.get(`https://winstxnhdw-nllb-api.hf.space/api/v4/language?text=${encodeURIComponent(messageContent.slice(0, 512).replace(/\n/g, ' '))}`);
     const translateLanguageRequest = await axios.get(`https://winstxnhdw-nllb-api.hf.space/api/v4/translator?text=${encodeURIComponent(messageContent)}&source=${detectLanguageRequest.data.language}&target=eng_Latn`)
 
     return translateLanguageRequest.data.result;
-
   }
 
   catch {
