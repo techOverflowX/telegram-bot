@@ -1054,11 +1054,12 @@ bot.on("message", async (msg) => {
     return;
   }
 
-  // Skip election check if censorship is explicitly disabled for this chat
-  if (
-    defaultCensorshipActive === false ||
-    chatIdCensorshipStatusMap[chatId] === false
-  ) {
+  // Determine if censorship is active for the current chat
+  const censorshipActive =
+    chatIdCensorshipStatusMap[chatId] ?? defaultCensorshipActive;
+
+  // Skip election check if censorship is not active for this chat
+  if (!censorshipActive) {
     return;
   }
 
@@ -1102,11 +1103,12 @@ bot.on("edited_message", async (msg) => {
     return;
   }
 
-  // Skip election check if censorship is explicitly disabled for this chat
-  if (
-    defaultCensorshipActive === false ||
-    chatIdCensorshipStatusMap[chatId] === false
-  ) {
+  // Determine if censorship is active for the current chat
+  const censorshipActive =
+    chatIdCensorshipStatusMap[chatId] ?? defaultCensorshipActive;
+
+  // Skip election check if censorship is not active for this chat
+  if (!censorshipActive) {
     return;
   }
 
