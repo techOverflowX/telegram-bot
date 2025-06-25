@@ -3,7 +3,7 @@
  *
  * @param {msTelegramBot.Messageg} msg
  */
-export function getNameForReply(msg) {
+function getNameForReply(msg) {
   let namePart = "Anonymous user";
   if (msg.from.username) {
     namePart = `@${msg.from.username}`;
@@ -12,3 +12,7 @@ export function getNameForReply(msg) {
   }
   return namePart;
 }
+
+module.exports = {
+  getNameForReply,
+};
