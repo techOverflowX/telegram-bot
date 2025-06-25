@@ -284,13 +284,14 @@ bot.onText(/!bot ((?:.|\n|\r)+)/, async (msg, match) => {
 async function translateToEnglish(messageContent) {
   try {
     const detectLanguageRequest = await axios.get(`https://winstxnhdw-nllb-api.hf.space/api/v4/language?text=${encodeURIComponent(messageContent.slice(0, 512).replace(/\n/g, ' '))}`);
-    const translateLanguageRequest = await axios.get(`https://winstxnhdw-nllb-api.hf.space/api/v4/translator?text=${encodeURIComponent(messageContent)}&source=${detectLanguageRequest.data.language}&target=eng_Latn`)
+    const detectedLanguage = detectLanguageRequest.data.language
+    const translateLanguageRequest = await axios.get(`https://winstxnhdw-nllb-api.hf.space/api/v4/translator?text=${encodeURIComponent(messageContent)}&source=${detectedLanguage}&target=eng_Latn`)
 
-    return translateLanguageRequest.data.result;
+    return [translateLanguageRequest.data.result, detectedLanguage];
   }
 
   catch {
-    return undefined;
+    return [undefined, undefined];
   }
 }
 
@@ -299,10 +300,10 @@ async function handleNonEnglish(namePart, messageContent, messageId, chatId) {
   let reply = `${RECURSIVE_MARKER} failed. \nHi, ${namePart}. This is an automated reminder to use English in this group so that everyone can understand. 😊`;
   // let reply = `Non-English message detected. ${RECURSIVE_MARKER} failed.`;
 
-  const translateText = await translateToEnglish(messageContent);
+  const [translatedText, detectedLanguage] = await translateToEnglish(messageContent);
 
-  if (translateText) {
-    reply = `Non-English message detected. ${RECURSIVE_MARKER}:\n${translateText}`;
+  if (translatedText) {
+    reply = `${detectedLanguage} message detected. ${RECURSIVE_MARKER}:\n${translatedText}`;
   }
 
   console.log(`Reply: ${reply}`);
