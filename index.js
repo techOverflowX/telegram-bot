@@ -13,6 +13,7 @@ console.log(process.env);
 
 const { getTbillsMessage, getTBiilsErrorMessage } = require("./masApiService");
 const { isElectionRelated } = require("./coolingDay");
+const { createDaoVoteProposal } = require("./src/modules/dao/commands/createDaoVoteProposal");
 
 const pool = new Pool({
   user: process.env.PGUSER,
@@ -1142,5 +1143,9 @@ bot.on("edited_message", async (msg) => {
       });
   }
 });
+
+bot.onText(/\/createProposal (.+)/i, async (message, match) => {
+  createDaoVoteProposal(bot, message, match)
+})
 
 console.log("Bot started");
