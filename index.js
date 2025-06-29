@@ -283,45 +283,89 @@ bot.onText(/!bot ((?:.|\n|\r)+)/, async (msg, match) => {
 });
 
 async function translateToEnglish(messageContent) {
+  console.log(`[translateToEnglish] Starting translation for message: "${messageContent.slice(0, 100)}${messageContent.length > 100 ? '...' : ''}"`);
+  
   try {
-    const detectLanguageRequest = await axios.get(
-      `https://winstxnhdw-nllb-api.hf.space/api/v4/language?text=${encodeURIComponent(
-        messageContent.slice(0, 512).replace(/\n/g, " ")
-      )}`
-    );
+    const truncatedMessage = messageContent.slice(0, 512).replace(/\n/g, " ");
+    const detectLanguageUrl = `https://winstxnhdw-nllb-api.hf.space/api/v4/language?text=${encodeURIComponent(truncatedMessage)}`;
+    
+    console.log(`[translateToEnglish] Detecting language for truncated message: "${truncatedMessage}"`);
+    console.log(`[translateToEnglish] Language detection URL: ${detectLanguageUrl}`);
+    
+    const detectLanguageRequest = await axios.get(detectLanguageUrl);
     const detectedLanguage = detectLanguageRequest.data.language;
-    const translateLanguageRequest = await axios.get(
-      `https://winstxnhdw-nllb-api.hf.space/api/v4/translator?text=${encodeURIComponent(
-        messageContent
-      )}&source=${detectedLanguage}&target=eng_Latn`
-    );
+    
+    console.log(`[translateToEnglish] Detected language: ${detectedLanguage}`);
+    console.log(`[translateToEnglish] Language detection response:`, detectLanguageRequest.data);
+    
+    const translateUrl = `https://winstxnhdw-nllb-api.hf.space/api/v4/translator?text=${encodeURIComponent(
+      messageContent
+    )}&source=${detectedLanguage}&target=eng_Latn`;
+    
+    console.log(`[translateToEnglish] Translation URL: ${translateUrl}`);
+    console.log(`[translateToEnglish] Translating from ${detectedLanguage} to eng_Latn`);
+    
+    const translateLanguageRequest = await axios.get(translateUrl);
+    const translatedText = translateLanguageRequest.data.result;
+    
+    console.log(`[translateToEnglish] Translation response:`, translateLanguageRequest.data);
+    console.log(`[translateToEnglish] Translated text: "${translatedText}"`);
+    console.log(`[translateToEnglish] Translation successful: ${detectedLanguage} -> eng_Latn`);
 
-    return [translateLanguageRequest.data.result, detectedLanguage];
-  } catch {
+    return [translatedText, detectedLanguage];
+  } catch (error) {
+    console.error(`[translateToEnglish] Translation failed:`, error);
+    console.error(`[translateToEnglish] Error details:`, {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data
+    });
     return [undefined, undefined];
   }
 }
 
 async function handleNonEnglish(namePart, messageContent, messageId, chatId) {
-  console.log(`Handle Non-English Content: ${messageContent}`);
+  console.log(`[handleNonEnglish] Starting non-English handling for user: ${namePart}`);
+  console.log(`[handleNonEnglish] Chat ID: ${chatId}, Message ID: ${messageId}`);
+  console.log(`[handleNonEnglish] Message content: "${messageContent}"`);
+  console.log(`[handleNonEnglish] Message length: ${messageContent.length} characters`);
+  
   let reply = `${RECURSIVE_MARKER} failed. \nHi, ${namePart}. This is an automated reminder to use English in this group so that everyone can understand. 😊`;
-  // let reply = `Non-English message detected. ${RECURSIVE_MARKER} failed.`;
+  console.log(`[handleNonEnglish] Default fallback reply prepared: "${reply}"`);
 
+  console.log(`[handleNonEnglish] Calling translateToEnglish function...`);
   const [translatedText, detectedLanguage] = await translateToEnglish(
     messageContent
   );
 
+  console.log(`[handleNonEnglish] Translation result - Language: ${detectedLanguage}, Text: ${translatedText ? `"${translatedText}"` : 'undefined'}`);
+
   if (translatedText) {
     reply = `${detectedLanguage} message detected. ${RECURSIVE_MARKER}:\n${translatedText}`;
+    console.log(`[handleNonEnglish] Updated reply with translation: "${reply}"`);
+  } else {
+    console.log(`[handleNonEnglish] Translation failed, using fallback reply`);
   }
 
-  console.log(`Reply: ${reply}`);
+  console.log(`[handleNonEnglish] Final reply: "${reply}"`);
+  console.log(`[handleNonEnglish] Reply length: ${reply.length} characters`);
 
-  bot.sendMessage(chatId, reply, {
-    reply_to_message_id: messageId,
-    disable_web_page_preview: true,
-    parse_mode: "Markdown",
-  });
+  try {
+    console.log(`[handleNonEnglish] Sending message to Telegram...`);
+    const sentMessage = await bot.sendMessage(chatId, reply, {
+      reply_to_message_id: messageId,
+      disable_web_page_preview: true,
+    });
+    console.log(`[handleNonEnglish] Message sent successfully. Message ID: ${sentMessage.message_id}`);
+  } catch (error) {
+    console.error(`[handleNonEnglish] Failed to send message:`, error);
+    console.error(`[handleNonEnglish] Error details:`, {
+      message: error.message,
+      code: error.code,
+      response: error.response?.data
+    });
+  }
 }
 
 // language detection and auto translation
@@ -410,12 +454,17 @@ bot.onText(
     const namePart = getNameForReply(msg);
     const resp = match[1]; // the captured "whatever"
 
-    console.log(`Chinese matched: ${resp}`);
-    console.log(`Message content: ${messageContent}`);
+    console.log(`[ChineseDetection] Chinese character detected: "${resp}"`);
+    console.log(`[ChineseDetection] Full message content: "${messageContent}"`);
+    console.log(`[ChineseDetection] User: ${namePart}, Chat ID: ${chatId}, Message ID: ${messageId}`);
+    console.log(`[ChineseDetection] Thread ID: ${msg.message_thread_id}`);
+    console.log(`[ChineseDetection] Translation blacklist status: ${translationBlackListThreadIds.has(msg.message_thread_id) ? 'BLOCKED' : 'ALLOWED'}`);
+    
     if (!translationBlackListThreadIds.has(msg.message_thread_id)) {
+      console.log(`[ChineseDetection] Translation allowed, calling handleNonEnglish...`);
       handleNonEnglish(namePart, messageContent, messageId, chatId);
     } else {
-      console.log("Translation stopped for this thread");
+      console.log(`[ChineseDetection] Translation stopped for this thread - skipping translation`);
     }
   }
 );
