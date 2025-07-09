@@ -296,7 +296,7 @@ async function translateToEnglish(messageContent) {
   
   try {
     const truncatedMessage = messageContent.slice(0, 512).replace(/\n/g, " ");
-    const detectLanguageUrl = `https://winstxnhdw-nllb-api.hf.space/api/v4/language?text=${encodeURIComponent(truncatedMessage)}`;
+    const detectLanguageUrl = `https://winstxnhdw-nllb-api.hf.space/api/v4/language?text=${encodeURIComponent(truncatedMessage)}&fast-model-confidence-threshold=1.1`;
     
     console.log(`[translateToEnglish] Detecting language for truncated message: "${truncatedMessage}"`);
     console.log(`[translateToEnglish] Language detection URL: ${detectLanguageUrl}`);
