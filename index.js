@@ -73,7 +73,16 @@ axios
 const token = process.env.TELEGRAM_TOKEN;
 
 // Create a bot that uses 'polling' to fetch new updates
-const bot = new TelegramBot(token, { polling: true });
+const bot = new TelegramBot(token, {
+  polling: true,
+  request: {
+    agentOptions :{
+      keepAlive: true,
+      family: 4,
+    }
+  },
+  url: "https://api.telegram.org",
+});
 
 /**
  * Get name from the msg for addressing the user in reply
@@ -1029,6 +1038,7 @@ bot.onText(/\/stopTbills/i, async (msg) => {
   cronJob.stop();
 });
 
+// you should comment this out from here
 // Election-related content filter
 let chatIdCensorshipStatusMap = {};
 let defaultCensorshipActive = false;
@@ -1192,6 +1202,7 @@ bot.on("edited_message", async (msg) => {
       });
   }
 });
+// to here
 
 bot.onText(/\/createProposal (.+)/i, async (message, match) => {
   createDaoVoteProposal(bot, message, match)
