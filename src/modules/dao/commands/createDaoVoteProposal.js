@@ -2,16 +2,17 @@ const { getNameForReply } = require("../../../common/getNameForReply");
 const {
   MINIMUM_APPROVAL_PERCENTAGE,
   MINIMUM_REQUIRED_VOTES,
-  TWENTY_FOUR_HOURS,
+  DAO_VOTE_POLL_DURATION,
 } = require("../../../constants/constants");
 const { closeDaoVoteProposal } = require("./closeDaoVoteProposal");
 
 async function createDaoVoteProposal(bot, message, match) {
-  const messageId = message.message_id;
-  const messageThreadId = message.message_thread_id;
   const chatId = message.chat.id;
+  const { 
+      message_thread_id: messageThreadId,
+      message_id: messageId
+  } = message;
   const usernameOfProposer = getNameForReply(message);
-
   const proposedPollTitle = match[1];
 
   const messageToSend = generateDaoVoteProposalMessage(
@@ -19,7 +20,22 @@ async function createDaoVoteProposal(bot, message, match) {
     usernameOfProposer
   );
 
-  const { poll } = await bot.sendPoll(
+  // const result = await bot.sendPoll(
+  //   chatId,
+  //   messageToSend,
+  //   ["Approve", "Deny"],
+  //   {
+  //     message_thread_id: messageThreadId,
+  //     reply_to_message_id: messageId,
+  //   }
+  // );
+  // console.log(result);
+
+  const {
+    chat,
+    message_id: createdPollMessageId,
+    poll
+  } = await bot.sendPoll(
     chatId,
     messageToSend,
     ["Approve", "Deny"],
@@ -29,17 +45,17 @@ async function createDaoVoteProposal(bot, message, match) {
     }
   );
 
+
+
   setTimeout(() => {
-    closeDaoVoteProposal(bot, chatId, messageThreadId, poll.id);
-  }, TWENTY_FOUR_HOURS);
+    closeDaoVoteProposal(bot, chat.id, messageThreadId, createdPollMessageId);
+  }, DAO_VOTE_POLL_DURATION);
 }
 
 function generateDaoVoteProposalMessage(proposedPollTitle, usernameOfProposer) {
   const message = `
-${usernameOfProposer} is currently proposing to create a DAO Vote with:
-
+${usernameOfProposer} is currently proposing to create a DAO Vote titled:
 ${proposedPollTitle}
-
 A minimum of ${MINIMUM_REQUIRED_VOTES} votes and an approval rate of ${
     MINIMUM_APPROVAL_PERCENTAGE * 100
   }% is required for the proposal to pass.
