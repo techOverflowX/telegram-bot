@@ -14,4 +14,4 @@ RUN npm install
 COPY . .
 
 # Command to run your bot
-CMD ["node", "src/bot/index.js"]
+CMD ["node", "src/index.js"]
