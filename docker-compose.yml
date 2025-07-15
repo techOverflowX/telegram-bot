@@ -1,11 +1,10 @@
-version: '3.8'
 services:
   pgsql:
     image: postgres:13.3-alpine
     restart: always
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=PGUSER
+      - POSTGRES_PASSWORD=PGPASSWORD
     ports:
       - '5432:5432'
     volumes: 
@@ -19,6 +18,25 @@ services:
       - '6379:6379'
     volumes:
       - redis-data:/data
+
+  # telegram-bot:
+  #   build:
+  #     dockerfile: Dockerfile
+  #   environment:
+  #     - TELEGRAM_TOKEN
+  #     - OPENAI_API_KEY
+  #     - PGUSER
+  #     - PGHOST=pgsql
+  #     - PGPASSWORD
+  #     - PGDATABASE
+  #     - REDIS_URL=redis
+  #   depends_on:
+  #     - pgsql
+  #     - redis
+  #   volumes:
+  #     - .:/app
+  #   working_dir: /app
+
 
 volumes:
   pgsql-db:

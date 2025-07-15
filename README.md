@@ -69,13 +69,13 @@ Search for `16x Engineer Bot` on Telegram and chat with it privately.
 node
 
 ```bash
-$ TELEGRAM_TOKEN=XXX node index.js
+$ TELEGRAM_TOKEN=XXX node src/index.js
 ```
 
 pm2
 
 ```bash
-$ TELEGRAM_TOKEN=XXX pm2 start index.js
+$ TELEGRAM_TOKEN=XXX pm2 start src/index.js
 ```
 
 with pgsql
@@ -85,7 +85,7 @@ $ PGUSER=dbuser \
   PGHOST=database.server.com \
   PGPASSWORD=secretpassword \
   PGDATABASE=mydb \
-  TELEGRAM_TOKEN=XXX pm2 start index.js
+  TELEGRAM_TOKEN=XXX pm2 start src/index.js
 ```
 
 ## Contribute

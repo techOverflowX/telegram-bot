@@ -3,31 +3,39 @@ const {
   MINIMUM_APPROVAL_PERCENTAGE,
 } = require("../../../constants/constants");
 
-async function closeDaoVoteProposal(bot, chatId, threadId, pollId) {
-  const closedPoll = await bot.stopPoll(chatId, pollId, {
+async function closeDaoVoteProposal(bot, chatId, threadId, messageId) {
+  const closedPoll = await bot.stopPoll(chatId, messageId, {
     message_thread_id: threadId,
   });
 
   const { options, total_voter_count } = closedPoll;
   if (total_voter_count < MINIMUM_REQUIRED_VOTES) {
-    bot.sendMessage(chatId, "Proposal has not been approved", {
+    bot.sendMessage(chatId, "Proposal is rejected due to not reaching the required votes", {
       message_thread_id: threadId,
     });
+    return;
   }
+
   const approvalPercentage = calculateApprovalPercentage(
     options,
     total_voter_count
   );
-
   if (
     isAboveApprovalPercentage(approvalPercentage, MINIMUM_APPROVAL_PERCENTAGE)
   ) {
     bot.sendMessage(chatId, "Proposal has been approved", {
       message_thread_id: threadId,
+      reply_to_message_id: messageId,
     });
+
+    await bot.pinChatMessage(chatId, messageId, {
+      disable_notification: true,
+    })
+
   } else {
-    bot.sendMessage(chatId, "Proposal has not been approved", {
+    bot.sendMessage(chatId, "Proposal has been rejected", {
       message_thread_id: threadId,
+      reply_to_message_id: messageId,
     });
   }
 }
