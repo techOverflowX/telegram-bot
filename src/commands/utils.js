@@ -5,7 +5,7 @@ function initUtils(bot) {
 }
 
 function setupCommands(bot) {
-  bot.onText(/\/hello/i, async (msg) => {
+  bot.onText(/\/hello$/i, async (msg) => {
     const chatId = msg.chat.id;
     const { 
       message_thread_id: messageThreadId,
@@ -21,7 +21,7 @@ function setupCommands(bot) {
     })
   })
 
-  bot.onText(/\/chat_id/i, async (msg) => {
+  bot.onText(/\/chat_id$/i, async (msg) => {
     const chatId = msg.chat.id;
     const { 
       message_thread_id: messageThreadId,
@@ -36,7 +36,7 @@ function setupCommands(bot) {
     })
   })
 
-  bot.onText(/\/message_thread_id/i, async (msg) => {
+  bot.onText(/\/message_thread_id$/i, async (msg) => {
     const chatId = msg.chat.id;
     const { 
       message_thread_id: messageThreadId,

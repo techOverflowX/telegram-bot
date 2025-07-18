@@ -8,6 +8,7 @@ dotenv.config();
 const { pool, redis } = require("./config/database");
 
 // Import command modules
+const { initLeetcode: initLeetcodeNew } = require("./modules/leetcode/index");
 const { initLeetCode } = require("./commands/leetcode");
 const { initDefinitions } = require("./commands/definitions");
 const { initSummarize } = require("./commands/summarize");
@@ -57,6 +58,7 @@ bot.on("polling_error", (msg) => console.log(msg));
 // Initialize all command modules
 initUtils(bot);
 initLeetCode(bot, trollQuotes);
+initLeetcodeNew(bot, trollQuotes);
 initDefinitions(bot);
 initSummarize(bot);
 initTBills(bot);

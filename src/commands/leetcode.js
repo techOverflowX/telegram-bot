@@ -8,9 +8,12 @@ const { pool } = require("../config/database");
 const cacheService = require("../services/cache");
 const { getNameForReply, checkAdmin } = require("../utils/helpers");
 const { ADMINS, SGT_TIMEZONE } = require("../utils/constants");
+const { TOPIC_CHANNEL } = require("../constants/constants");
 
 // Store thread IDs for each chat
 const chatThreadMap = {};
+chatThreadMap[-1001509355730] = TOPIC_CHANNEL.LEETCODE;
+
 let chatIdCronStatusMap = {};
 let lcQuestionCronJob;
 let cacheClearCronJob;

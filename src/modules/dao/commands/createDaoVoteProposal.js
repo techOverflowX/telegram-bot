@@ -3,6 +3,7 @@ const {
   MINIMUM_APPROVAL_PERCENTAGE,
   MINIMUM_REQUIRED_VOTES,
   DAO_VOTE_POLL_DURATION,
+  TOPIC_CHANNEL,
 } = require("../../../constants/constants");
 const { closeDaoVoteProposal } = require("./closeDaoVoteProposal");
 
@@ -20,17 +21,6 @@ async function createDaoVoteProposal(bot, message, match) {
     usernameOfProposer
   );
 
-  // const result = await bot.sendPoll(
-  //   chatId,
-  //   messageToSend,
-  //   ["Approve", "Deny"],
-  //   {
-  //     message_thread_id: messageThreadId,
-  //     reply_to_message_id: messageId,
-  //   }
-  // );
-  // console.log(result);
-
   const {
     chat,
     message_id: createdPollMessageId,
@@ -40,28 +30,22 @@ async function createDaoVoteProposal(bot, message, match) {
     messageToSend,
     ["Approve", "Deny"],
     {
-      message_thread_id: messageThreadId,
+      message_thread_id: TOPIC_CHANNEL.DAO_VOTE,
       reply_to_message_id: messageId,
+      question_parse_mode: "MarkdownV2",
     }
   );
 
-
-
   setTimeout(() => {
-    closeDaoVoteProposal(bot, chat.id, messageThreadId, createdPollMessageId);
+    closeDaoVoteProposal(bot, chat.id, TOPIC_CHANNEL.DAO_VOTE, createdPollMessageId);
   }, DAO_VOTE_POLL_DURATION);
 }
 
 function generateDaoVoteProposalMessage(proposedPollTitle, usernameOfProposer) {
-  const message = `
-${usernameOfProposer} is currently proposing to create a DAO Vote titled:
+  const message = `${usernameOfProposer} is currently proposing to create a DAO Vote:
 ${proposedPollTitle}
-A minimum of ${MINIMUM_REQUIRED_VOTES} votes and an approval rate of ${
-    MINIMUM_APPROVAL_PERCENTAGE * 100
-  }% is required for the proposal to pass.
-The poll will be open for 24 hours.
-    `;
-
+A minimum of ${MINIMUM_REQUIRED_VOTES} votes and an approval rate of ${parseInt(MINIMUM_APPROVAL_PERCENTAGE * 100)}% is required for the proposal to pass
+The poll will be open for 24 hours`;
   return message;
 }
 
