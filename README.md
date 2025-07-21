@@ -150,7 +150,7 @@ This project is made possible by the following contributors:
 ### Feature Contributors
 - **[hahaashton1](https://github.com/hahaashton1)** - LeetCode Daily Challenge Reminder (15 commits)
 - **[tyqiangz](https://github.com/tyqiangz)** - T-Bills feature and MAS API integration (5 commits)
-- **Jun Jie** - Core functionality improvements (7 commits)
+- **Joules** - Core functionality improvements (7 commits)
 - **[Winston H.](https://github.com/winstxnhdw)** - Various enhancements (3 commits)
 
 ### Additional Contributors
