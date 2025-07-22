@@ -15,6 +15,7 @@ const chatThreadMap = {};
 chatThreadMap[-1001509355730] = TOPIC_CHANNEL.LEETCODE;
 
 let chatIdCronStatusMap = {};
+chatThreadMap[-1001509355730] = true;
 let lcQuestionCronJob;
 let cacheClearCronJob;
 

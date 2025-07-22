@@ -24,7 +24,6 @@ async function createDaoVoteProposal(bot, message, match) {
   const {
     chat,
     message_id: createdPollMessageId,
-    poll
   } = await bot.sendPoll(
     chatId,
     messageToSend,
@@ -32,7 +31,7 @@ async function createDaoVoteProposal(bot, message, match) {
     {
       message_thread_id: TOPIC_CHANNEL.DAO_VOTE,
       reply_to_message_id: messageId,
-      question_parse_mode: "MarkdownV2",
+      question_parse_mode: "HTML",
     }
   );
 
@@ -42,10 +41,10 @@ async function createDaoVoteProposal(bot, message, match) {
 }
 
 function generateDaoVoteProposalMessage(proposedPollTitle, usernameOfProposer) {
-  const message = `${usernameOfProposer} is currently proposing to create a DAO Vote:
+  const message = `${usernameOfProposer} is currently proposing to create a DAO Vote, a minimum of ${MINIMUM_REQUIRED_VOTES} votes and an approval rate of ${parseInt(MINIMUM_APPROVAL_PERCENTAGE * 100)}% is required for the proposal to pass. The poll will be open for 24 hours
+
 ${proposedPollTitle}
-A minimum of ${MINIMUM_REQUIRED_VOTES} votes and an approval rate of ${parseInt(MINIMUM_APPROVAL_PERCENTAGE * 100)}% is required for the proposal to pass
-The poll will be open for 24 hours`;
+`;
   return message;
 }
 
