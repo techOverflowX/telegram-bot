@@ -1,7 +1,5 @@
 const { getNameForReply } = require("../../../common/getNameForReply");
 const {
-  MINIMUM_APPROVAL_PERCENTAGE,
-  MINIMUM_REQUIRED_VOTES,
   DAO_VOTE_POLL_DURATION,
   TOPIC_CHANNEL,
 } = require("../../../constants/constants");
