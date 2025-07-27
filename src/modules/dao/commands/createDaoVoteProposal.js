@@ -42,7 +42,7 @@ async function createDaoVoteProposal(bot, message, match) {
 }
 
 function generateDaoVoteProposalMessage(proposedPollTitle, usernameOfProposer) {
-  const message = `${usernameOfProposer} is currently proposing to create a DAO Vote. The poll will be open for 24 hours
+  const message = `${usernameOfProposer} created a DAO Vote, the vote will run for 24 hours.
 
 ${proposedPollTitle}
 `;
