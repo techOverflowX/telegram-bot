@@ -1,7 +1,5 @@
 const { getNameForReply } = require("../../../common/getNameForReply");
 const {
-  MINIMUM_APPROVAL_PERCENTAGE,
-  MINIMUM_REQUIRED_VOTES,
   DAO_VOTE_POLL_DURATION,
   TOPIC_CHANNEL,
 } = require("../../../constants/constants");
@@ -14,7 +12,9 @@ async function createDaoVoteProposal(bot, message, match) {
       message_id: messageId
   } = message;
   const usernameOfProposer = getNameForReply(message);
-  const proposedPollTitle = match[1];
+  const args = match[1].split("|");
+  const proposedPollTitle = args[0];
+  const pollOptions = args.length > 1 ? args.slice(1) : ["Approve", "Deny"];
 
   const messageToSend = generateDaoVoteProposalMessage(
     proposedPollTitle,
@@ -27,8 +27,9 @@ async function createDaoVoteProposal(bot, message, match) {
   } = await bot.sendPoll(
     chatId,
     messageToSend,
-    ["Approve", "Deny"],
+    pollOptions,
     {
+      // message_thread_id: messageThreadId,
       message_thread_id: TOPIC_CHANNEL.DAO_VOTE,
       reply_to_message_id: messageId,
       question_parse_mode: "HTML",
@@ -41,7 +42,7 @@ async function createDaoVoteProposal(bot, message, match) {
 }
 
 function generateDaoVoteProposalMessage(proposedPollTitle, usernameOfProposer) {
-  const message = `${usernameOfProposer} is currently proposing to create a DAO Vote, a minimum of ${MINIMUM_REQUIRED_VOTES} votes and an approval rate of ${parseInt(MINIMUM_APPROVAL_PERCENTAGE * 100)}% is required for the proposal to pass. The poll will be open for 24 hours
+  const message = `${usernameOfProposer} created a DAO Vote, the vote will run for 24 hours.
 
 ${proposedPollTitle}
 `;
