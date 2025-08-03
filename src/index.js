@@ -65,6 +65,10 @@ initTBills(bot);
 initAdmin(bot);
 initDao(bot);
 
+bot.setMyCommands([
+  {command: "lc", description: "Gets the daily question of the day"},
+]);
+
 console.log("Bot initialized with all modules");
 
 // Export bot instance for potential external use
