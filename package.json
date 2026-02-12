@@ -18,6 +18,7 @@
     "node-telegram-bot-api": "^0.60.0",
     "openai": "^4.96.2",
     "pg": "^8.8.0",
+    "puppeteer": "^24.37.2",
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
