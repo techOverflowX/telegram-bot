@@ -9,6 +9,7 @@ const cacheService = require("../services/cache");
 const { getNameForReply, checkAdmin } = require("../utils/helpers");
 const { ADMINS, SGT_TIMEZONE } = require("../utils/constants");
 const { TOPIC_CHANNEL } = require("../constants/constants");
+const { scrapeDailyLCQuestion } = require("../services/leetcodeScraper");
 
 // Store thread IDs for each chat
 const chatThreadMap = {};
@@ -23,39 +24,10 @@ let cacheClearCronJob;
 // External data
 let trollQuotes = [];
 
-// GraphQL query for LC daily question
-const dailyLCQuery = `
-query questionOfToday {
-  activeDailyCodingChallengeQuestion {
-  date
-  userStatus
-  link
-  question {
-    acRate
-    difficulty
-    freqBar
-    frontendQuestionId: questionFrontendId
-    isFavor
-    paidOnly: isPaidOnly
-    status
-    title
-    titleSlug
-    hasVideoSolution
-    hasSolution
-    topicTags {
-      name
-      id
-      slug
-    }
-  }
-  }
-  }
-`;
-
 /**
  * Initialize LeetCode module with external dependencies
- * @param {TelegramBot} bot 
- * @param {Array} quotes 
+ * @param {TelegramBot} bot
+ * @param {Array} quotes
  */
 function initLeetCode(bot, quotes = []) {
   trollQuotes = quotes;
@@ -75,35 +47,7 @@ async function getLCQuestion() {
     return cachedLCQ;
   }
 
-  const response = await axios({
-    url: "https://khbvwaqoymhdhgoiwtlf.supabase.co/functions/v1/lc-query",
-    method: "post",
-    headers: {
-      "content-type": "application/json",
-      Authorization: "Bearer " + process.env.SUPABASE_ANON_KEY,
-    },
-    data: {},
-  });
-
-  console.log(response.data);
-  const data = response.data.dailyChallenge;
-  const date = data.date;
-  const question = data.question;
-  const title = question.title;
-  const link = "https://leetcode.com" + data.link;
-  const difficulty = question.difficulty;
-  
-  let diffIndicator = "";
-  if (difficulty === "Easy") {
-    diffIndicator = "🟩";
-  } else if (difficulty === "Medium") {
-    diffIndicator = "🟨";
-  } else if (difficulty === "Hard") {
-    diffIndicator = "🟥";
-  }
-  
-  const msg = `*👨‍💻LC Daily Question👩‍💻*\r\n*Date:* ${date}\r\n*Title: *${title}\r\n*Difficulty:* ${difficulty} ${diffIndicator}\r\n${link}`;
-
+  const msg = await scrapeDailyLCQuestion();
   await cacheService.set("daily-lcq", msg, 86400);
   return msg;
 }
