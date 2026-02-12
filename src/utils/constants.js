@@ -21,6 +21,11 @@ const LANGUAGE_CONFIDENCE_THRESHOLD = 0.85;
 // Time constants
 const SGT_TIMEZONE = "Asia/Singapore";
 
+// AI Service Configuration
+const AI_QUOTA_LIMIT = 50000000; // 50M tokens per quota period
+const AI_QUOTA_TTL = 18000;      // 5 hours in seconds
+const AI_MODEL = "glm-4.7";      // GLM 4.7 model from Z.AI
+
 module.exports = {
   ADMINS,
   TERMS_URL,
@@ -29,5 +34,8 @@ module.exports = {
   RECURSIVE_MARKER,
   IGNORE_WORDS,
   LANGUAGE_CONFIDENCE_THRESHOLD,
-  SGT_TIMEZONE
+  SGT_TIMEZONE,
+  AI_QUOTA_LIMIT,
+  AI_QUOTA_TTL,
+  AI_MODEL
 };

@@ -16,10 +16,7 @@ const { isElectionRelated } = require("./coolingDay");
 const { createDaoVoteProposal } = require("./src/modules/dao/commands/createDaoVoteProposal");
 
 const pool = new Pool({
-  user: process.env.PGUSER,
-  host: process.env.PGHOST,
-  database: process.env.PGDATABASE,
-  password: process.env.PGPASSWORD, // Change to your password
+  connectionString: process.env.DATABASE_URL,
 
   // You can configure your pool settings here, if needed.
   // max: 20, // max number of clients in the pool

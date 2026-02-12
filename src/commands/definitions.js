@@ -1,6 +1,7 @@
 const axios = require("axios");
-const { getDinBotResponse } = require("../services/dinBot");
-const { getNameForReply } = require("../utils/helpers"); 
+const aiService = require("../services/aiService");
+const tokenLimiter = require("../services/tokenLimiter");
+const { getNameForReply } = require("../utils/helpers");
 const { TERMS_URL } = require("../utils/constants");
 
 // Dictionary for term definitions
@@ -47,7 +48,7 @@ function setupCommands(bot) {
     console.log(`Received definition request: ${resp}`);
 
     let reply = `Hi ${namePart}. I have not learnt about ${resp} yet.\r\nOpen a PR [here](https://github.com/paradite/16x-bot) to add it.`;
-    
+
     // Check local definitions first
     if (definitionMap[resp.toLowerCase()]) {
       const [description, link] = definitionMap[resp.toLowerCase()];
@@ -57,14 +58,29 @@ function setupCommands(bot) {
         reply = `${description}`;
       }
     } else {
-      // Fallback to Din bot
+      // Fallback to AI service
       try {
-        const dinBotResponseText = await getDinBotResponse(resp, namePart, chatId);
-        if (dinBotResponseText) {
-          reply = `${dinBotResponseText}`;
+        // Check if AI is enabled and quota is available
+        const quota = await tokenLimiter.checkQuota(chatId);
+
+        if (!quota.enabled) {
+          reply = "AI features not enabled for this chat. Ask admin to run /start-ai";
+        } else if (!quota.allowed) {
+          const resetTime = tokenLimiter.formatTimeRemaining(quota.resetIn);
+          reply = `AI token quota exceeded. Quota resets in ${resetTime}.`;
+        } else {
+          // Call AI service
+          const aiResult = await aiService.getDefinition(resp, namePart);
+          if (aiResult.response) {
+            // Consume tokens
+            await tokenLimiter.consumeTokens(chatId, aiResult.tokensUsed);
+            reply = aiResult.response;
+          }
+          // else: keep default "not learnt" message
         }
       } catch (error) {
-        console.error("Error getting Din bot response for definition:", error);
+        console.error("Error getting AI response for definition:", error);
+        // Keep default "not learnt" message on error
       }
     }
 

@@ -1,4 +1,5 @@
-const { getDinBotResponse } = require("../services/dinBot");
+const aiService = require("../services/aiService");
+const tokenLimiter = require("../services/tokenLimiter");
 const { getNameForReply } = require("../utils/helpers");
 
 /**
@@ -48,20 +49,29 @@ function setupCommands(bot) {
     }
 
     let reply = `Failed to summarize.`;
-    
+
     try {
-      // Send to Din bot for summarization
-      const dinBotResponseText = await getDinBotResponse(
-        `summarise ${match[1] ? match[1] : "this"}\r\n${resp}`,
-        namePart,
-        chatId
-      );
-      
-      if (dinBotResponseText) {
-        reply = `${dinBotResponseText}`;
+      // Check if AI is enabled and quota is available
+      const quota = await tokenLimiter.checkQuota(chatId);
+
+      if (!quota.enabled) {
+        reply = "AI features not enabled for this chat. Ask admin to run /start-ai";
+      } else if (!quota.allowed) {
+        const resetTime = tokenLimiter.formatTimeRemaining(quota.resetIn);
+        reply = `AI token quota exceeded. Quota resets in ${resetTime}.`;
+      } else {
+        // Call AI service for summarization
+        const aiResult = await aiService.summarizeText(resp, namePart);
+        if (aiResult.response) {
+          // Consume tokens
+          await tokenLimiter.consumeTokens(chatId, aiResult.tokensUsed);
+          reply = aiResult.response;
+        }
+        // else: keep default "Failed to summarize" message
       }
     } catch (error) {
-      console.error("Error getting Din bot response for summarization:", error);
+      console.error("Error getting AI response for summarization:", error);
+      // Keep default "Failed to summarize" message on error
     }
 
     console.log(`Reply Summary: ${reply}`);

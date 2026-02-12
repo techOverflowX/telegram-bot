@@ -1,6 +1,7 @@
 const { isElectionRelated } = require("../../coolingDay");
 const { getNameForReply, checkAdmin } = require("../utils/helpers");
 const { ADMINS } = require("../utils/constants");
+const tokenLimiter = require("../services/tokenLimiter");
 
 // State management
 let chatIdCensorshipStatusMap = {};
@@ -104,13 +105,111 @@ function setupCommands(bot) {
     const chatId = msg.chat.id;
     const msgThreadId = msg.message_thread_id;
     const messageId = msg.message_id;
-    
+
     translationBlackListThreadIds.delete(msgThreadId);
     const reply = `Translation started for this thread.`;
     bot.sendMessage(chatId, reply, {
       message_thread_id: msgThreadId,
       reply_to_message_id: messageId,
     });
+  });
+
+  // Start AI features (Admin only)
+  bot.onText(/\/start-ai/i, async (msg) => {
+    if (!checkAdmin(msg, bot, ADMINS)) {
+      return;
+    }
+
+    const chatId = msg.chat.id;
+    const msgThreadId = msg.message_thread_id;
+    const messageId = msg.message_id;
+
+    const success = await tokenLimiter.enableAI(chatId);
+
+    if (success) {
+      const reply = `AI features activated for this chat. Quota: 50M tokens for 5 hours.`;
+      bot.sendMessage(chatId, reply, {
+        message_thread_id: msgThreadId,
+        reply_to_message_id: messageId,
+      });
+      console.log(`AI features activated for chatId: ${chatId}`);
+    } else {
+      const reply = `Failed to activate AI features. Please check Redis connection.`;
+      bot.sendMessage(chatId, reply, {
+        message_thread_id: msgThreadId,
+        reply_to_message_id: messageId,
+      });
+    }
+  });
+
+  // Check AI status (Admin only)
+  bot.onText(/\/check-ai/i, async (msg) => {
+    if (!checkAdmin(msg, bot, ADMINS)) {
+      return;
+    }
+
+    const chatId = msg.chat.id;
+    const msgThreadId = msg.message_thread_id;
+    const messageId = msg.message_id;
+
+    const status = await tokenLimiter.getStatus(chatId);
+
+    if (!status.enabled) {
+      const reply = `AI Status for this chat:\n- Enabled: No\n\nRun /start-ai to activate AI features.`;
+      bot.sendMessage(chatId, reply, {
+        message_thread_id: msgThreadId,
+        reply_to_message_id: messageId,
+      });
+      return;
+    }
+
+    // Calculate percentage
+    const percentageUsed = ((status.tokensUsed / status.quotaLimit) * 100).toFixed(1);
+
+    // Format numbers with commas
+    const formatNumber = (num) => num.toLocaleString('en-US');
+
+    // Format time remaining
+    const timeRemaining = tokenLimiter.formatTimeRemaining(status.resetIn);
+
+    const reply = `AI Status for this chat:
+- Enabled: Yes
+- Tokens used: ${formatNumber(status.tokensUsed)} / ${formatNumber(status.quotaLimit)} (${percentageUsed}%)
+- Remaining: ${formatNumber(status.tokensRemaining)}
+- Quota resets in: ${timeRemaining}`;
+
+    bot.sendMessage(chatId, reply, {
+      message_thread_id: msgThreadId,
+      reply_to_message_id: messageId,
+    });
+  });
+
+  // Stop AI features (Admin only)
+  bot.onText(/\/stop-ai/i, async (msg) => {
+    if (!checkAdmin(msg, bot, ADMINS)) {
+      return;
+    }
+
+    const chatId = msg.chat.id;
+    const msgThreadId = msg.message_thread_id;
+    const messageId = msg.message_id;
+
+    const success = await tokenLimiter.disableAI(chatId);
+
+    if (success) {
+      const reply = `AI features deactivated for this chat.`;
+      bot.sendMessage(chatId, reply, {
+        message_thread_id: msgThreadId,
+        reply_to_message_id: messageId,
+      });
+      console.log(`AI features deactivated for chatId: ${chatId}`);
+    } else {
+      const reply = `Failed to deactivate AI features. Please check Redis connection.`;
+      bot.sendMessage(chatId, reply, {
+        message_thread_id: msgThreadId,
+        reply_to_message_id: messageId,
+      });
+    }
   });
 }
 

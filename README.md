@@ -12,8 +12,11 @@ Send a message with `!bot` prefix to get technical term definitions.
 !bot Docker
 ```
 
-### 💬 AI-Powered Chat Integration
-Use `!summarize` to get AI-generated summaries of conversations via Din Bot integration.
+### 💬 AI-Powered Features (Admin-Activated)
+- **Token-Limited Access**: Admins activate with `/start-ai` (50M tokens per 5 hours)
+- **Technical Definitions**: AI fallback when term not in local dictionary
+- **Message Summarization**: AI-powered conversation summaries
+- **Model**: GLM 4.7 via Z.AI
 
 ### 📚 LeetCode Integration
 - **Daily Questions**: Automatic daily LeetCode question posting at 8:01 AM SGT
@@ -50,6 +53,9 @@ Automatic detection and translation of non-English messages to encourage English
 - `/startLC`, `/stopLC`, `/checkLC` - Manage LeetCode scheduling
 - `/startTbills`, `/stopTbills`, `/checkTbills` - Manage T-Bills scheduling
 - `/startCensorship`, `/stopCensorship` - Manage election content filtering
+- `/start-ai` - Activate AI features for chat (50M tokens/5 hours)
+- `/check-ai` - Check AI status and token usage
+- `/stop-ai` - Deactivate AI features for chat
 
 ### Submission Format
 - LeetCode submissions: Upload screenshot with caption `#LCYYYYMMDD` (e.g., `#LC20241107`)
@@ -66,16 +72,13 @@ Automatic detection and translation of non-English messages to encourage English
 ```bash
 # Required
 TELEGRAM_TOKEN=your_telegram_bot_token
-PGUSER=your_postgres_user
-PGHOST=your_postgres_host
-PGDATABASE=your_database_name
-PGPASSWORD=your_postgres_password
+DATABASE_URL=postgresql://user:password@host:port/database
 REDIS_URL=your_redis_connection_string
+ZAI_API_KEY=your_zai_api_key
 
 # Optional (for advanced features)
-DIN_TOKEN=din_bot_api_token
 SUPABASE_ANON_KEY=leetcode_api_access
-OPENROUTER_API_KEY=content_moderation_api
+OPENROUTER_API_KEY=election_content_moderation
 ```
 
 ### Installation & Running

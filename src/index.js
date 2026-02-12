@@ -10,8 +10,8 @@ const { pool, redis } = require("./config/database");
 // Import command modules
 const { initLeetcode: initLeetcodeNew } = require("./modules/leetcode/index");
 const { initLeetCode } = require("./commands/leetcode");
-const { initDefinitions } = require("./commands/definitions");
-const { initSummarize } = require("./commands/summarize");
+// const { initDefinitions } = require("./commands/definitions");  // AI features disabled for now
+// const { initSummarize } = require("./commands/summarize");      // AI features disabled for now
 const { initTBills } = require("./commands/tbills");
 const { initAdmin } = require("./commands/admin");
 const { initUtils } = require("./commands/utils");
@@ -59,8 +59,8 @@ bot.on("polling_error", (msg) => console.log(msg));
 initUtils(bot);
 initLeetCode(bot, trollQuotes);
 initLeetcodeNew(bot, trollQuotes);
-initDefinitions(bot);
-initSummarize(bot);
+// initDefinitions(bot);  // AI features disabled for now
+// initSummarize(bot);    // AI features disabled for now
 initTBills(bot);
 initAdmin(bot);
 initDao(bot);
