@@ -507,99 +507,16 @@ function getCountStr(count) {
   }
 }
 
-// GraphQL query for LC daily question
-const dailyLCQuery = `
-query questionOfToday {
-  activeDailyCodingChallengeQuestion {
-  date
-  userStatus
-  link
-  question {
-    acRate
-    difficulty
-    freqBar
-    frontendQuestionId: questionFrontendId
-    isFavor
-    paidOnly: isPaidOnly
-    status
-    title
-    titleSlug
-    hasVideoSolution
-    hasSolution
-    topicTags {
-      name
-      id
-      slug
-    }
-  }
-  }
-  }
-`;
-// `
-// query questionOfToday {
-// activeDailyCodingChallengeQuestion {
-// date
-// userStatus
-// link
-// question {
-//   acRate
-//   difficulty
-//   freqBar
-//   frontendQuestionId: questionFrontendId
-//   isFavor
-//   paidOnly: isPaidOnly
-//   status
-//   title
-//   titleSlug
-//   hasVideoSolution
-//   hasSolution
-//   topicTags {
-//     name
-//     id
-//     slug
-//   }
-// }
-// }
-// }
-// `;
-// POST request to get LC daily question
+const { scrapeDailyLCQuestion } = require("./src/services/leetcodeScraper");
+
+// Fetch LC daily question via Puppeteer scraper, with Redis cache
 const getLCQuestion = async () => {
-  //check if exist in cache first
   const cachedLCQ = await redis.get("daily-lcq");
   if (cachedLCQ) {
     console.log("Using cached LCQ");
     return cachedLCQ;
   }
-  const response = await axios({
-    url: "https://khbvwaqoymhdhgoiwtlf.supabase.co/functions/v1/lc-query",
-    method: "post",
-    headers: {
-      "content-type": "application/json",
-      Authorization: "Bearer " + process.env.SUPABASE_ANON_KEY,
-    },
-    data: {
-      // query: dailyLCQuery,
-    },
-  });
-
-  //save to cache for 24 hours
-  console.log(response.data);
-  const data = response.data.dailyChallenge;
-  const date = data.date;
-  const question = data.question;
-  const title = question.title;
-  const link = "https://leetcode.com" + data.link;
-  const difficulty = question.difficulty;
-  let diffIndicator = "";
-  if (difficulty === "Easy") {
-    diffIndicator = "🟩";
-  } else if (difficulty === "Medium") {
-    diffIndicator = "🟨";
-  } else if (difficulty === "Hard") {
-    diffIndicator = "🟥";
-  }
-  const msg = `*👨‍💻LC Daily Question👩‍💻*\r\n*Date:* ${date}\r\n*Title: *${title}\r\n*Difficulty:* ${difficulty} ${diffIndicator}\r\n${link}`;
-
+  const msg = await scrapeDailyLCQuestion();
   await redis.set("daily-lcq", msg, "EX", 86400);
   return msg;
 };

@@ -77,7 +77,6 @@ REDIS_URL=your_redis_connection_string
 ZAI_API_KEY=your_zai_api_key
 
 # Optional (for advanced features)
-SUPABASE_ANON_KEY=leetcode_api_access
 OPENROUTER_API_KEY=election_content_moderation
 ```
 
@@ -169,7 +168,8 @@ This project is made possible by the following contributors:
 ### Core Components
 - **Main Entry**: `index.js` - All bot logic, command handlers, and cron jobs
 - **Database**: PostgreSQL (submissions), Redis (caching), SQLite (content filtering)
-- **External APIs**: MAS API, Din Bot, LeetCode API, OpenAI/OpenRouter
+- **External APIs**: MAS API, Din Bot, OpenAI/OpenRouter
+- **Web Scraping**: LeetCode daily question via Puppeteer
 
 ### Key Services
 - **MAS API Service**: `masApiService.js` - Singapore T-Bills data

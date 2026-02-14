@@ -17,7 +17,7 @@ This is a Telegram bot (TechOF Bot/16x Engineer Bot) designed for tech Telegram 
 
 - **Main Entry Point**: `index.js` - Contains all bot logic, command handlers, and cron jobs
 - **Database Layer**: Uses both PostgreSQL (user submissions) and Redis (caching), with SQLite for election content filtering
-- **External Integrations**: MAS API (T-Bills), Din Bot (AI responses), LeetCode API, OpenAI/OpenRouter (content moderation)
+- **External Integrations**: MAS API (T-Bills), Din Bot (AI responses), LeetCode (Puppeteer scraper), OpenAI/OpenRouter (content moderation)
 
 ### Key Components
 
@@ -65,7 +65,6 @@ This is a Telegram bot (TechOF Bot/16x Engineer Bot) designed for tech Telegram 
 - `PGUSER`, `PGHOST`, `PGDATABASE`, `PGPASSWORD` - PostgreSQL connection
 - `REDIS_URL` - Redis connection string
 - `DIN_TOKEN` - Din Bot API access
-- `SUPABASE_ANON_KEY` - LeetCode API access
 - `OPENROUTER_API_KEY` - Election content filtering
 
 ### Testing Approach
