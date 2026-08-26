@@ -540,7 +540,7 @@ bot.on("message", async (msg) => {
     let statsStr = "";
     try {
       const res = await pool.query(
-        `SELECT COUNT(*) FROM ( SELECT DISTINCT a.username FROM lc_records as a WHERE a.qn_date = $1 and a.username != $2 ) as temp `,
+        `SELECT COUNT(*) FROM ( SELECT DISTINCT a.username FROM techof.lc_records as a WHERE a.qn_date = $1 and a.username != $2 ) as temp `,
         [dateStr, namePart]
       );
       const existingCount = Number(res.rows[0].count);
@@ -572,7 +572,7 @@ bot.on("message", async (msg) => {
     try {
       console.log("executing query");
       await pool.query(
-        `INSERT INTO lc_records (username, qn_date, has_image, msg_text, timestamp) VALUES ($1, $2, $3, $4, $5)`,
+        `INSERT INTO techof.lc_records (username, qn_date, has_image, msg_text, timestamp) VALUES ($1, $2, $3, $4, $5)`,
         [namePart, dateStr, true, msg.caption, new Date()]
       );
       console.log("insert success");

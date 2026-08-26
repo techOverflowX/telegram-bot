@@ -3,10 +3,7 @@ const Redis = require("ioredis");
 
 // PostgreSQL connection pool
 const pool = new Pool({
-  user: process.env.PGUSER,
-  host: process.env.PGHOST,
-  database: process.env.PGDATABASE,
-  password: process.env.PGPASSWORD,
+  connectionString: process.env.DATABASE_URL,
   
   // Pool configuration
   // max: 20, // max number of clients in the pool
